@@ -1,4 +1,7 @@
 from LANChat import LANChat
+from render import Render
+import sys
+import threading
 
 if __name__ == '__main__':
     # condition checking
@@ -14,5 +17,7 @@ if __name__ == '__main__':
     while len(username) > 16:
         username = input("Enter a username within 16 characters:")
 
-    # Start LANChat
-    LANChat(username, sys.argv[1], int(sys.argv[2])).run()
+    # Initialize LANChat API
+    lanchat = LANChat(username, sys.argv[1], int(sys.argv[2]))
+    # Start lanchat
+    lanchat.run()

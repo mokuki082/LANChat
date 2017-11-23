@@ -4,12 +4,13 @@ import socketserver
 import time
 
 class TCPServer():
-    def __init__(self, address):
+    def __init__(self, address, lanchat_api):
         self.socket = socket.socket()
         self.socket.bind(address)
         self.stop = False
+        self.lanchat_api = lanchat_api
 
-    def stop():
+    def stop(self):
         self.stop = True
 
     def serve(self):
@@ -44,7 +45,7 @@ class TCPServer():
                 data = str(client.recv(1024),'utf-8')
                 username, *message = data.split(":")
                 message = ':'.join(message)
-                print("{}: {}".format(username, message))
+                self.lanchat_api.display_message(username, message)
                 client.close()
                 self.threads[thread_id][1] = None # Clear client
             time.sleep(0.05)
@@ -52,8 +53,7 @@ class TCPServer():
 
 
 class TCPClient():
-    def __init__(self, username, serverInfos):
-        self.username = username
+    def __init__(self, serverInfos):
         self.serverInfos = serverInfos
 
     def add_serverInfo(self, serverInfo):
@@ -69,7 +69,6 @@ class TCPClient():
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.connect(address)
-                message = "{}:{}".format(self.username, message)
                 sock.sendall(bytes(message, 'utf-8'))
         except ConnectionRefusedError:
             pass
