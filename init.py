@@ -15,7 +15,7 @@ if __name__ == '__main__':
     # Ask for user's username
     username = " " * 17
     while len(username) > 16:
-        username = input("Enter a username within 16 characters:")
+        username = input("Enter a username within 16 characters: ")
 
     # Initialize LANChat API
     lanchat = LANChat(username, sys.argv[1], int(sys.argv[2]))

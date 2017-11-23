@@ -58,7 +58,15 @@ class Render():
         # Refresh window
         self.stdscr.refresh()
 
+    def setup(self):
+        curses.start_color()
+        curses.use_default_colors()
+        for i in range(0, curses.COLORS):
+            curses.init_pair(i+1, i, -1)
+
+
     def main(self, stdscr):
+        self.setup()
         self.stdscr = stdscr
         # Clear screen
         stdscr.clear()

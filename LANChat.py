@@ -29,7 +29,7 @@ class LANChat():
 
     def run(self):
         # Start server
-        threading.Thread(target=self.server.serve).start()
+        threading.Thread(target=self.server.serve, daemon=True).start()
         # Start rendering
         self.render.run()
 

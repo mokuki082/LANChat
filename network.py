@@ -18,7 +18,9 @@ class TCPServer():
         nthreads = 4
         self.threads = []
         for i in range(nthreads):
-            self.threads.append([threading.Thread(target=self.handle,args=(i,)),
+            self.threads.append([threading.Thread(target=self.handle,
+                                                args=(i,),
+                                                daemon=True),
                                 None])
             self.threads[i][0].start()
         # Start listening for connections
@@ -63,7 +65,8 @@ class TCPClient():
         for server in self.serverInfos:
             server_addr = server["address"]
             threading.Thread(target=self.send_message_worker,
-                            args=(server_addr, message)).start()
+                            args=(server_addr, message),
+                            daemon=True).start()
 
     def send_message_worker(self, address, message):
         try:
