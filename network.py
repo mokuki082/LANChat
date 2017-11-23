@@ -1,17 +1,55 @@
-import socket, threading, socketserver
+import socket
+import threading
+import socketserver
+import time
 
-class TCPRequestHandler(socketserver.BaseRequestHandler):
-    def setup(self):
-        self
+class TCPServer():
+    def __init__(self, address):
+        self.socket = socket.socket()
+        self.socket.bind(address)
+        self.stop = False
 
-    def handle(self):
-        data = str(self.request.recv(1024),'utf-8')
-        username, *message = data.split(":")
-        message = ':'.join(message)
-        print("{}: {}".format(username, message))
+    def stop():
+        self.stop = True
 
-class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-    pass
+    def serve(self):
+        # Create a thread pool
+        nthreads = 4
+        self.threads = []
+        for i in range(nthreads):
+            self.threads.append([threading.Thread(target=self.handle,args=(i,)),
+                                None])
+            self.threads[i][0].start()
+        # Start listening for connections
+        self.socket.listen()
+        # Give a task to a thread in the thread pool
+        while not self.stop:
+            client, *_ = self.socket.accept()
+            found_thread = False
+            while not found_thread:
+                for thread in self.threads:
+                    if not thread[1]:
+                        thread[1] = client
+                        found_thread = True
+                        break
+                time.sleep(0.01)
+            time.sleep(0.05)
+        for thread in self.threads:
+            thread.join()
+
+    def handle(self, thread_id):
+        while not self.stop:
+            if self.threads[thread_id][1]:
+                client = self.threads[thread_id][1]
+                data = str(client.recv(1024),'utf-8')
+                username, *message = data.split(":")
+                message = ':'.join(message)
+                print("{}: {}".format(username, message))
+                client.close()
+                self.threads[thread_id][1] = None # Clear client
+            time.sleep(0.05)
+
+
 
 class TCPClient():
     def __init__(self, username, serverInfos):
