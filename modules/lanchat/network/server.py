@@ -1,6 +1,7 @@
 import socket
 import threading
 import time
+from modules.peer import PeerInfo
 
 
 class TCPServer():
@@ -8,7 +9,9 @@ class TCPServer():
         self.lanchat = lanchat
         self.stop = False
         self.socket = socket.socket()
-        self.socket.bind(lanchat.get_user().get_address())
+        ip = lanchat.get_user().get_ip()
+        port = lanchat.get_user().get_port()
+        self.socket.bind((ip, port))
 
     def stahp(self):
         self.stop = True
@@ -49,11 +52,15 @@ class TCPServer():
         while not self.stop:
             if self.threads[thread_id][1]:
                 client = self.threads[thread_id][1]
-                ip = self.threads[thread_id][2]
+                ip = self.threads[thread_id][2][0]
                 data = str(client.recv(1024), 'utf-8')
                 username, port, *message = data.split(":")
                 # Add peer (if valid)
-                self.lanchat.get_user().add_peer(ip, port)
+                try:
+                    peer = PeerInfo(username, ip, port)
+                    self.lanchat.get_peers().add(peer)
+                except ValueError:
+                    pass
                 # Render received message
                 message = ':'.join(message)
                 self.lanchat.display_message(username, message)
@@ -63,23 +70,3 @@ class TCPServer():
                 # Clear address
                 self.threads[thread_id][2] = None
             time.sleep(0.05)
-
-
-class TCPClient():
-    def __init__(self, lanchat):
-        self.lanchat = lanchat
-
-    def send_message(self, message):
-        for peer in self.lanchat.get_user().get_peers():
-            threading.Thread(target=self.send_message_worker,
-                             args=(tuple(peer), message),
-                             daemon=True
-                             ).start()
-
-    def send_message_worker(self, address, message):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(address)
-                sock.sendall(bytes(message, 'utf-8'))
-        except ConnectionRefusedError:
-            pass
