@@ -4,29 +4,36 @@ A terminal based chatroom for small networks
 
 ## Getting Started
 ### Prerequisites
-**Not supported on Windows**
+**LANChat is not supported on Windows**
+
 This program uses the `curses` python module, which is only supported for _Linux_ and _MacOS_.
-Sorry Windows users!
+
+Sorry Windows users.
 
 ### Running the program
 ```
 python3 main.py [host_config peers_config]
 ```
-Note: `[args]` represents optional arguments.
+Note:
+- `[args]` represents optional arguments.
+- `127.0.0.1:8080` is used as the default address
+- Messages in the current version are _unencrypted_. Please use with caution.
+
 
 ### Config files
 #### Host Config
-The host config file is a json file with following format:
+The __host config file__ is a _json_ file with following format:
 ```
 {
-  "ip": "127.0.0.1", // Host ip address
-  "port": 8080, // Host port number 0-65535
-  "username": null, // Host username, default to null
-  "color": null // Potential to specify user colors, unimplemented in current version.
+  "ip": "127.0.0.1",    // Host ip address
+  "port": 8080,         // Host port number 0-65535
+  "username": null,     // Host username, default to null
+  "color": null         // Unused in the current version
 }
 ```
 
-The peers config fils is a csv file containing ip and ports of your initial peers.
+The __peers config file__ is a _csv_ file (with `:` as delimiters) containing ip and ports of your initial peers.
+
 For example:
 ```
 127.0.0.1:8080
