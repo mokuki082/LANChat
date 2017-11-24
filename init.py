@@ -10,7 +10,11 @@ if __name__ == '__main__':
         config_fname = ''.join(config_fname)
 
     # Load user information from config file
-    user = User(config_fname=config_fname)
+    try:
+        user = User(config_fname=config_fname)
+    except FileNotFoundError:
+        print("Error: Config file not found.")
+        exit(1)
 
     # If user hasn't specified a username
     if not user.get_username():
@@ -24,3 +28,4 @@ if __name__ == '__main__':
     lanchat = LANChat(user)
     # Start lanchat
     lanchat.run()
+    exit(0)

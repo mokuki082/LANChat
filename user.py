@@ -120,14 +120,14 @@ class User():
         host_port = config['host']['port']
         # Check host configuration
         if not self.check_port(host_port):
-            raise ValueError('Port has to be within the range 1024-65535 inclusive')
+            raise ValueError('Error: Port has to be within the range 1024-65535 inclusive')
         invalid_peers = []
         for peer in config['peers']:
             # Check that port is within 1024-65535
             if not self.check_port(peer[1]):
                 invalid_peers.append(peer)
             # Check that peer isn't the host (avoid loopbacks)
-            if peer == [host_ip, host_port]:
+            if peer[0] == host_ip and peer[1] == host_port:
                 invalid_peers.append(peer)
         # Remove invalid peers
         for peer in invalid_peers:
@@ -147,7 +147,7 @@ class User():
         # Add peer
         self.peers.append([ip, port])
 
-    def save_config(config_fname):
-        with open(config_fname, w) as f:
+    def save_config(self, config_fname):
+        with open(config_fname, 'w') as f:
             content = json.dumps(self.config, sort_keys=True, indent=4)
             f.write(content)

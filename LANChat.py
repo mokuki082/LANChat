@@ -35,3 +35,9 @@ class LANChat():
             # Clean up
             self.server.stahp()
             self.render.stahp()
+        if command.startswith('/save_config'):
+            _, *fname = command.split()
+            fname = ' '.join(fname)
+            self.user.save_config(fname)
+            self.render.add_message('SYSTEM','Config file saved in {}'
+                                    .format(fname))
