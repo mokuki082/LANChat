@@ -1,7 +1,6 @@
 import threading
-from modules.client import TCPClient
-from modules.server import TCPServer
-from modules.render import Render
+from modules.lanchat.network import server, client
+from modules.lanchat.ui import render
 
 
 class LANChat():
@@ -10,10 +9,10 @@ class LANChat():
         self.user = user  # Dictionary containing user info
         self.peers = peers  # PeerInfoList
         # Initialize server and client
-        self.server = TCPServer(self)
-        self.client = TCPClient(self)
+        self.server = server.TCPServer(self)
+        self.client = client.TCPClient(self)
         # Initialize Renderer
-        self.render = Render(self)
+        self.render = render.Render(self)
 
     def run(self):
         # Start server

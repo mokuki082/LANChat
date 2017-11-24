@@ -1,7 +1,7 @@
 import socket
 import threading
 import time
-from modules.peer import PeerInfo
+from modules.lanchat.core.peers import PeerInfo
 
 
 class TCPServer():

@@ -1,6 +1,4 @@
-from modules.LANChat import LANChat
-from modules.host import Host
-from modules.peer import PeerInfoList
+from modules.lanchat.core import host, peers, lanchat
 import sys
 import os
 
@@ -16,8 +14,8 @@ if __name__ == '__main__':
 
     # Load user information from config file
     try:
-        user = Host(host_config_fname)
-        peers = PeerInfoList(peer_config_fname)
+        user = host.Host(host_config_fname)
+        peers = peers.Peers(peer_config_fname, user)
         # If user hasn't specified a username
         if not user.get_username():
             # Ask for user's username
@@ -27,7 +25,7 @@ if __name__ == '__main__':
             user.set_username(username)
 
         # Initialize LANChat API
-        lanchat = LANChat(user, peers)
+        lanchat = lanchat.LANChat(user, peers)
         # Start lanchat
         lanchat.run()
         exit(0)

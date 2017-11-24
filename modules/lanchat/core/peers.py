@@ -2,7 +2,7 @@ import csv
 import socket
 
 
-class UserInfo():
+class PeerInfo():
     def __init__(self, username, ip, port):
         self.set_username(username)
         if not self.set_ip(ip):
@@ -51,7 +51,7 @@ class UserInfo():
         return True
 
 
-class UserInfoList():
+class Peers():
     def __init__(self, config_fname, host):
         # List of UserInfos
         self.host = host
@@ -66,8 +66,13 @@ class UserInfoList():
             for row in config_reader:
                 if len(row) == 2:
                     try:
-                        peer = UserInfo(None, row[0], int(row[1]))
-                        if peer in peers or peer == user:
+                        peer = PeerInfo(None, row[0], int(row[1]))
+                        # If peer is duplicated
+                        if peer in peers:
+                            continue
+                        # If peer is the same as host
+                        if (peer.get_ip() == self.host.get_ip() and
+                            peer.get_port() == self.host.get_port()):
                             continue
                         peers.append(peer)
                     except ValueError:
@@ -80,7 +85,7 @@ class UserInfoList():
 
     def add(self, peer):
         # Check if peer is of correct type
-        if not isinstance(peer, UserInfo):
+        if not isinstance(peer, PeerInfo):
             return
         # Check if peer already exists
         if peer in self.peers:
