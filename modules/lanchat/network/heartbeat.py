@@ -18,10 +18,10 @@ class HeartBeat():
             # Broadcast a heartbeat to everyone
             self.client.send('hb:{}:{}'.format(self.host.get_port(),
                                                self.host.get_username()))
-            # Remove all peers that hasn't been seen for more than 5 seconds
+            # Remove all peers that hasn't been seen for more than 4 seconds
             peers_del = []
             for peer in self.peers.get_peers():
-                if int((datetime.now() - peer.last_seen).total_seconds()) > 5:
+                if int((datetime.now() - peer.last_seen).total_seconds()) > 4:
                     peers_del.append(peer)
             for peer in peers_del:
                 if peer.username:
