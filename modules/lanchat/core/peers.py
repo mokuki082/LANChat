@@ -57,18 +57,20 @@ class PeerInfo():
 
 
 class Peers():
-    def __init__(self, config_fname, host):
+    def __init__(self, fname, host):
         # List of UserInfos
         self.host = host
-        self.peers = self.load_config(config_fname)
+        self.peers = self.load_config(fname)
+        # Initialize block list
+        self.blocklist = []  # Any ip in here cannot send to/receive from host
 
     def __str__(self):
         return ''.join([i.ip + ':' + str(i.port) + ',' for i in self.peers])
 
-    ''' Set up (Initialization) functions '''
-    def load_config(self, config_fname):
+    ''' Config related functions '''
+    def load_config(self, fname):
         peers = []
-        with open(config_fname, 'r') as config_f:
+        with open(fname, 'r') as config_f:
             # config file line format: 'ip:port'
             config_reader = csv.reader(config_f, delimiter=':')
             for row in config_reader:
@@ -87,10 +89,19 @@ class Peers():
                         continue
         return peers
 
+    def save_config(self, fname):
+        with open(fname, 'w') as config_f:
+            writer = csv.writer(config_f, delimiter=':')
+            for peer in self.peers:
+                ip, port = peer.get_ip(), peer.get_port()
+                if (ip, port) not in self.blocklist:
+                    writer.writerow([ip, port])
+
     ''' Basic Operations '''
     def get_peers(self):
         return self.peers
 
+    ''' Add a peer object '''
     def add(self, peer):
         # Check if peer is of correct type
         if not isinstance(peer, PeerInfo):
@@ -99,6 +110,7 @@ class Peers():
         self.peers.append(peer)
         return True
 
+    ''' Remove the peer based on peer object, username or address '''
     def remove(self, peer=None, username=None, address=None):
         if peer:
             self.peers.remove(peer)
@@ -115,6 +127,7 @@ class Peers():
         for peer in peers_to_del:
             self.peers.remove(peer)
 
+    ''' Search the first peer matching all conditions given '''
     def search(self, ip=None, port=None, username=None):
         if port and not isinstance(port, int):
             raise ValueError('Error: Port has to be an integer')
@@ -143,4 +156,4 @@ class Peers():
         for peer in self.peers:
             if peer.get_username():
                 users.append(peer.get_usernames)
-        return self.identified_peers
+        return users

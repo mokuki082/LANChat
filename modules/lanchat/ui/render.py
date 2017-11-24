@@ -31,7 +31,13 @@ class Render():
         # How many lines for each message
         line = []
         for msg in self.message_log:
-            line.append(math.ceil((len(msg['msg']) + 18)/self.w))
+            msg = msg['msg']
+            if '\n' not in msg:
+                line.append(math.ceil((len(msg) + 18)/self.w))
+            else:
+                msg = msg.split('\n')
+                for i in msg:
+                    line.append(math.ceil((len(i) + 18)/self.w))
         # Delete old messges to fit the new messages in
         lines_occupied = sum(line)
         while lines_occupied >= self.h - 2: # Last 2 lines are for input prompt
@@ -40,14 +46,15 @@ class Render():
             lines_occupied -= line.pop(0)
             self.message_log.pop(0)
         # Render unrendered messages
-        # Set cursor at line curr_y
         for i, msg in enumerate(self.message_log[self.msg_count:]):
             self.msg_count += 1
             for y in range(line[i]): # Render each line
-                self.curr_y += 1
-                m = msg['msg'][y*(self.w-18):(y+1)*(self.w-18)]
-                u = msg['user'].ljust(18) if y == 0 else ' '*18
-                self.stdscr.addstr(self.curr_y,0,u + m + '\n')
+                ms = msg['msg'].split('\n')
+                for i in ms:
+                    self.curr_y += 1
+                    m = i[y*(self.w-18):(y+1)*(self.w-18)]
+                    u = msg['user'].ljust(18) if i == ms[0] else ' '*18
+                    self.stdscr.addstr(self.curr_y,0,u + m + '\n')
         # Render text input
         self.stdscr.addstr(self.h-2, 0, ' ' * (self.w*2 - 1))
         self.stdscr.addstr(self.h-2, 0, self.input)
@@ -98,7 +105,7 @@ class Render():
                 return
             self.input += chr(c)
 
-    def add_message(self, username, message):
+    def add_message(self, username, message, color=None):
         self.message_log.append(
-            {'user': username,'msg': message}
+            {'user': username,'msg': message, 'color':color}
         )

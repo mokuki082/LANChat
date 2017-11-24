@@ -15,8 +15,6 @@ class LANChat():
         self.heartbeat = heartbeat.HeartBeat(self)
         # Initialize Renderer
         self.render = render.Render(self)
-        # Initialize block list
-        self.blocklist = []  # Any ip in here cannot send to/receive from host
 
     def run(self):
         # Start server
@@ -34,7 +32,7 @@ class LANChat():
         message = "msg:{}:{}:{}".format(self.host.get_username(),
                                     self.host.get_port(),
                                     message)
-        self.client.send(message, blocklist=self.blocklist)
+        self.client.send(message, blocklist=self.peers.blocklist)
 
     def display_message(self, username, message):
         self.render.add_message(username, message)
@@ -46,7 +44,7 @@ class LANChat():
         return self.peers
 
     def get_blocklist(self):
-        return self.blocklist
+        return self.peers.blocklist
 
     def do_command(self, command):
         if command == '/quit' or command == '/exit':
@@ -54,12 +52,13 @@ class LANChat():
             return
         if command.startswith('/save_config'):
             args = command.split()
-            if not len(args) >= 2:
-                self.sys_say('Please specify a filename.')
+            if not len(args) == 3:
+                self.sys_say('Please specify two filenames (host, peers).')
                 return
-            fname = ' '.join(args[1:])
-            self.host.save_config(fname)
-            self.sys_say('Current config saved in {}.'.format(fname))
+            self.host.save_config(args[1])
+            self.peers.save_config(args[2])
+            sys_msg = '''Current config saved.'''.format(args[1], args[2])
+            self.sys_say(sys_msg)
             return
         if command == '/show_peers':
             users = self.peers.get_usernames()
@@ -75,8 +74,9 @@ class LANChat():
                 for user in args[1:]:
                     peer = self.peers.search(username=user)
                     if peer:
-                        self.blocklist.append((peer.get_ip(), peer.get_port()))
-                        self.sys_say('''Blocked {}. No messages from now on will be sent to/received from this user'''.format(user))
+                        self.peers.blocklist.append((peer.get_ip(),
+                                                     peer.get_port()))
+                        self.sys_say('''Blocked {}. \nNo messages from now on will be sent to/received from this user'''.format(user))
                     else:
                         self.sys_say("User {} not found".format(user))
             return
@@ -87,7 +87,8 @@ class LANChat():
                 for user in args[1:]:
                     peer = self.peers.search(username=user)
                     if peer:
-                        self.blocklist.remove((peer.get_ip(), peer.get_port()))
+                        self.peers.blocklist.remove((peer.get_ip(),
+                                                     peer.get_port()))
                         self.sys_say('Unblocked {}'.format(user))
                     else:
                         self.sys_say("User {} not found".format(user))
