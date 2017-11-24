@@ -96,4 +96,4 @@ class LANChat():
         self.sys_say('Sowy, command not found')
 
     def sys_say(self, msg):
-        self.render.add_message('SYSTEM', msg)
+        self.render.add_message('SYSTEM', msg, mode='REVERSE')
