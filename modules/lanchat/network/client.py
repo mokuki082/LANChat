@@ -3,17 +3,18 @@ import threading
 
 
 class TCPClient():
-    def __init__(self, lanchat):
-        self.peers = lanchat.get_peers()
+    def __init__(self, peers):
+        self.peers = peers
 
-    def send_message(self, message):
+    def send(self, message, blocklist=[]):
         for peer in self.peers.get_peers():
-            threading.Thread(target=self.send_message_worker,
-                             args=(peer, message),
-                             daemon=True
-                             ).start()
+            if peer not in blocklist:
+                threading.Thread(target=self.send_worker,
+                                 args=(peer, message),
+                                 daemon=True
+                                 ).start()
 
-    def send_message_worker(self, peer, message):
+    def send_worker(self, peer, message):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 address = (peer.get_ip(), peer.get_port())

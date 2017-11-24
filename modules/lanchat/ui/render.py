@@ -86,7 +86,7 @@ class Render():
                 if self.input.startswith('/'):  # It's a command
                     self.lanchat.do_command(self.input)
                 else:  # It's a message
-                    self.add_message(self.lanchat.get_user().get_username(),
+                    self.add_message(self.lanchat.get_host().get_username(),
                                      self.input)
                     self.lanchat.send_message(self.input)
                 self.input = ''

@@ -2,6 +2,7 @@ import socket
 import threading
 import time
 from modules.lanchat.core.peers import PeerInfo
+from datetime import datetime
 
 
 class TCPServer():
@@ -9,8 +10,8 @@ class TCPServer():
         self.lanchat = lanchat
         self.stop = False
         self.socket = socket.socket()
-        ip = lanchat.get_user().get_ip()
-        port = lanchat.get_user().get_port()
+        ip = lanchat.get_host().get_ip()
+        port = lanchat.get_host().get_port()
         self.socket.bind((ip, port))
 
     def stahp(self):
@@ -50,20 +51,46 @@ class TCPServer():
 
     def handle(self, thread_id):
         while not self.stop:
-            if self.threads[thread_id][1]:
-                client = self.threads[thread_id][1]
-                ip = self.threads[thread_id][2][0]
+            if self.threads[thread_id][1]:  # There is a job for thready!
+                client, addr = self.threads[thread_id][1:]
+                ip = addr[0]
                 data = str(client.recv(1024), 'utf-8')
-                username, port, *message = data.split(":")
-                # Add peer (if valid)
-                try:
-                    peer = PeerInfo(username, ip, port)
-                    self.lanchat.get_peers().add(peer)
-                except ValueError:
-                    pass
-                # Render received message
-                message = ':'.join(message)
-                self.lanchat.display_message(username, message)
+                command, *args = data.split(':')
+                # Process Command
+                if command == 'msg': # A new message from peer
+                    username, port, *message = args
+                    message = ':'.join(message)
+                    # Render received message
+                    self.lanchat.display_message(username, message)
+                elif command == 'hb': # heartbeat
+                    port, username = args
+                    # check if this is a new user
+                    peers = self.lanchat.get_peers()
+                    found_peer = peers.search(ip, port)
+                    if found_peer:
+                        # update last_seen
+                        found_peer.last_seen = datetime.now()
+                    else:
+                        # Relay: "sd:ip:port:username"
+                        msg = 'sd:{}:{}:{}'.format(ip, port, username)
+                        self.lanchat.client.send(msg)
+                        # Add the user into peers
+                        peers.add(PeerInfo(username, ip, int(port)))
+                        sys_msg = "{} joined the chat".format(username)
+                        self.lanchat.sys_say(sys_msg)
+                elif command == 'sd': # Relay
+                    new_ip, new_port, username = args
+                    # check if this is a new user
+                    peers = self.lanchat.get_peers()
+                    found_peer = peers.search(new_ip, int(new_port))
+                    if not found_peer:
+                        # Relay again: "sd:ip:port:username"
+                        msg = 'sd:{}:{}:{}'.format(new_ip, new_port, username)
+                        self.lanchat.client.send(msg)
+                        # Add the new peer into peers
+                        peers.add(PeerInfo(username, new_ip, int(new_port)))
+                        sys_msg = "{} joined the chat".format(username)
+                        self.lanchat.sys_say(sys_msg)
                 client.close()
                 # Clear client
                 self.threads[thread_id][1] = None

@@ -1,14 +1,16 @@
 import csv
 import socket
+from datetime import datetime
 
 
 class PeerInfo():
-    def __init__(self, username, ip, port):
-        self.set_username(username)
+    def __init__(self, username, ip, port, last_seen=datetime.now()):
+        self.username = username
         if not self.set_ip(ip):
             raise ValueError('Error: Invalid IP')
         if not self.set_port(port):
             raise ValueError('Error: Invalid port')
+        self.last_seen = last_seen
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -100,10 +102,16 @@ class Peers():
                     peers_to_del.append(peer)
                     continue
             if address:
-                if peer.get_ip == address[0] and peer.get_port == address[1]:
+                if peer.ip == address[0] and peer.port == address[1]:
                     peers_to_del.append(peer)
         for peer in peers_to_del:
             self.peers.remove(peer)
+
+    def search(self, ip, port):
+        for peer in self.peers:
+            if peer.ip == ip and peer.port == port:
+                return peer
+        return None
 
     ''' Returns a list of usernames '''
     def get_usernames(self):
