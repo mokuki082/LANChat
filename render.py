@@ -6,21 +6,18 @@ import math
 import threading
 
 class Render():
-    def __init__(self, lanchat_api):
+    def __init__(self, lanchat):
         self.stop = False
+        self.lanchat = lanchat
         self.input = ''
         self.message_log = [] # message_log [{'user':'moku','msg':'hello'}]
         self.msg_count = 0 # Counts the number of messages rendered on screen
         self.curr_y = 0 # Counts the number of lines filled on screen
-        self.lanchat_api = lanchat_api
-
 
     def run(self):
         wrapper(self.main)
 
-    '''
-        render the chatroom
-    '''
+    ''' render the chatroom '''
     def render(self):
         # Get current window size
         h_new, w_new = self.stdscr.getmaxyx()
@@ -87,8 +84,9 @@ class Render():
             return
         if c == 10: # Enter
             if len(self.input) > 0:
-                self.add_message(self.lanchat_api.username, self.input)
-                self.lanchat_api.send_message(self.input)
+                self.add_message(self.lanchat.get_user().get_username(),
+                                 self.input)
+                self.lanchat.send_message(self.input)
                 self.input = ''
         elif c == 127 or c == 263: # Backspace
             if len(self.input) > 0:
@@ -96,7 +94,7 @@ class Render():
         else:
             self.input += chr(c)
 
-    def add_message(self,username, message):
+    def add_message(self, username, message):
         self.message_log.append(
             {'user':username,'msg':message}
         )

@@ -1,14 +1,14 @@
 import socket
 import threading
-import socketserver
 import time
 
+
 class TCPServer():
-    def __init__(self, address, lanchat_api):
-        self.socket = socket.socket()
-        self.socket.bind(address)
+    def __init__(self, lanchat):
+        self.lanchat = lanchat
         self.stop = False
-        self.lanchat_api = lanchat_api
+        self.socket = socket.socket()
+        self.socket.bind(lanchat.get_user().get_address())
 
     def stop(self):
         self.stop = True
@@ -16,23 +16,28 @@ class TCPServer():
     def serve(self):
         # Create a thread pool
         nthreads = 4
+        # threads format: [[thread_object, client_socket, client_ip]]
         self.threads = []
         for i in range(nthreads):
             self.threads.append([threading.Thread(target=self.handle,
-                                                args=(i,),
-                                                daemon=True),
-                                None])
+                                                  args=(i,),
+                                                  daemon=True
+                                                  ),
+                                None, None]
+                                )
             self.threads[i][0].start()
         # Start listening for connections
         self.socket.listen()
         # Give a task to a thread in the thread pool
         while not self.stop:
-            client, *_ = self.socket.accept()
+            client, addr = self.socket.accept()
             found_thread = False
+            # Select a thread to give the task to
             while not found_thread:
                 for thread in self.threads:
                     if not thread[1]:
                         thread[1] = client
+                        thread[2] = addr
                         found_thread = True
                         break
                 time.sleep(0.01)
@@ -44,29 +49,32 @@ class TCPServer():
         while not self.stop:
             if self.threads[thread_id][1]:
                 client = self.threads[thread_id][1]
-                data = str(client.recv(1024),'utf-8')
-                username, *message = data.split(":")
+                ip = self.threads[thread_id][2]
+                data = str(client.recv(1024), 'utf-8')
+                username, port, *message = data.split(":")
+                # Add peer (if valid)
+                self.lanchat.get_user().add_peer(ip, port)
+                # Render received message
                 message = ':'.join(message)
-                self.lanchat_api.display_message(username, message)
+                self.lanchat.display_message(username, message)
                 client.close()
-                self.threads[thread_id][1] = None # Clear client
+                # Clear client
+                self.threads[thread_id][1] = None
+                # Clear address
+                self.threads[thread_id][2] = None
             time.sleep(0.05)
 
 
-
 class TCPClient():
-    def __init__(self, serverInfos):
-        self.serverInfos = serverInfos
-
-    def add_serverInfo(self, serverInfo):
-        self.serverInfos.append(serverInfo)
+    def __init__(self, lanchat):
+        self.lanchat = lanchat
 
     def send_message(self, message):
-        for server in self.serverInfos:
-            server_addr = server["address"]
+        for peer in self.lanchat.get_user().get_peers():
             threading.Thread(target=self.send_message_worker,
-                            args=(server_addr, message),
-                            daemon=True).start()
+                             args=(tuple(peer), message),
+                             daemon=True
+                             ).start()
 
     def send_message_worker(self, address, message):
         try:

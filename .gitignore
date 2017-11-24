@@ -1,2 +1,8 @@
-__pycache__*
+# Mac
 .DS_STORE
+
+# Python IDE
+__pycache__
+.ropeproject
+
+

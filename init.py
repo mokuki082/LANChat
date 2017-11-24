@@ -1,23 +1,26 @@
 from LANChat import LANChat
-from render import Render
+from user import User
 import sys
-import threading
 
 if __name__ == '__main__':
-    # condition checking
-    if len(sys.argv) < 3:
-        print("Please specify Host and Port")
-        exit(0)
-    if not sys.argv[2].isdigit() or int(sys.argv[2]) not in range(1024,65535):
-        print("Invalid Port")
-        exit(0)
+    # Expecting arguments: config_fname
+    config_fname = 'config.json' # Default
+    if len(sys.argv) >= 2:
+        _, *config_fname = sys.argv
+        config_fname = ''.join(config_fname)
 
-    # Ask for user's username
-    username = " " * 17
-    while len(username) > 16:
-        username = input("Enter a username within 16 characters: ")
+    # Load user information from config file
+    user = User(config_fname=config_fname)
+
+    # If user hasn't specified a username
+    if not user.get_username():
+        # Ask for user's username
+        username = " " * 17
+        while len(username) > 16:
+            username = input("Enter a username within 16 characters: ")
+        user.set_username(username)
 
     # Initialize LANChat API
-    lanchat = LANChat(username, sys.argv[1], int(sys.argv[2]))
+    lanchat = LANChat(user)
     # Start lanchat
     lanchat.run()
