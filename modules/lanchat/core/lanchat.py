@@ -10,7 +10,7 @@ class LANChat():
         self.peers = peers  # PeerInfoList
         # Initialize server and client
         self.server = server.TCPServer(self)
-        self.client = client.TCPClient(peers)
+        self.client = client.TCPClient(self)
         # Initialize heartbeat
         self.heartbeat = heartbeat.HeartBeat(self)
         # Initialize Renderer

@@ -4,16 +4,16 @@ from datetime import datetime
 
 
 class PeerInfo():
-    def __init__(self, username, ip, port, last_seen=datetime.now()):
+    def __init__(self, username, ip, port, last_seen=None):
         self.username = username
         if not self.set_ip(ip):
             raise ValueError('Error: Invalid IP')
         if not self.set_port(port):
             raise ValueError('Error: Invalid port')
-        self.last_seen = last_seen
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        if last_seen:
+            self.last_seen = last_seen
+        else:
+            self.last_seen = datetime.now()
 
     ''' Getters and setters '''
     def get_username(self):
@@ -52,12 +52,18 @@ class PeerInfo():
         self.port = port
         return True
 
+    def compare(self, ip, port):
+        return self.ip == ip and self.port == port
+
 
 class Peers():
     def __init__(self, config_fname, host):
         # List of UserInfos
         self.host = host
         self.peers = self.load_config(config_fname)
+
+    def __str__(self):
+        return ''.join([i.ip + ':' + str(i.port) + ',' for i in self.peers])
 
     ''' Set up (Initialization) functions '''
     def load_config(self, config_fname):
@@ -88,14 +94,16 @@ class Peers():
     def add(self, peer):
         # Check if peer is of correct type
         if not isinstance(peer, PeerInfo):
-            return
-        # Check if peer already exists
-        if peer in self.peers:
-            return
+            return False
         # Add peer
         self.peers.append(peer)
+        return True
 
-    def remove(self, username=None, address=None):
+    def remove(self, peer=None, username=None, address=None):
+        if peer:
+            self.peers.remove(peer)
+            return
+
         peers_to_del = []
         for peer in self.peers:
             if username and username == peer.get_username:
@@ -108,8 +116,10 @@ class Peers():
             self.peers.remove(peer)
 
     def search(self, ip, port):
+        if not isinstance(ip, str) or not isinstance(port, int):
+            raise ValueError('Error: Port has to be an integer')
         for peer in self.peers:
-            if peer.ip == ip and peer.port == port:
+            if peer.get_ip() == ip and peer.get_port() == port:
                 return peer
         return None
 

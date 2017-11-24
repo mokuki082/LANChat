@@ -62,33 +62,41 @@ class TCPServer():
                     message = ':'.join(message)
                     # Render received message
                     self.lanchat.display_message(username, message)
-                elif command == 'hb': # heartbeat
+                elif command == 'hb':  # heartbeat
                     port, username = args
                     # check if this is a new user
                     peers = self.lanchat.get_peers()
-                    found_peer = peers.search(ip, port)
-                    if found_peer:
+                    found_peer = peers.search(ip, int(port))
+                    if found_peer:  # Old user
                         # update last_seen
                         found_peer.last_seen = datetime.now()
-                    else:
-                        # Relay: "sd:ip:port:username"
-                        msg = 'sd:{}:{}:{}'.format(ip, port, username)
-                        self.lanchat.client.send(msg)
+                    else:  # New user'
                         # Add the user into peers
                         peers.add(PeerInfo(username, ip, int(port)))
+                        # Relay: "sd:port:new_ip:new_port:new_username"
+                        host = self.lanchat.get_host()
+                        msg = 'sd:{}:{}:{}:{}'.format(host.get_port(),
+                                                      ip, port, username)
+                        self.lanchat.client.send(msg,
+                                                 blocklist=[(ip, int(port))])
+
                         sys_msg = "{} joined the chat".format(username)
                         self.lanchat.sys_say(sys_msg)
-                elif command == 'sd': # Relay
-                    new_ip, new_port, username = args
+                elif command == 'sd':  # Relay
+                    from_port, new_ip, new_port, username = args
+                    from_port, new_port = int(from_port), int(new_port)
                     # check if this is a new user
                     peers = self.lanchat.get_peers()
-                    found_peer = peers.search(new_ip, int(new_port))
+                    found_peer = peers.search(new_ip, new_port)
                     if not found_peer:
+                        self.lanchat.sys_say(str(peers))
                         # Relay again: "sd:ip:port:username"
                         msg = 'sd:{}:{}:{}'.format(new_ip, new_port, username)
-                        self.lanchat.client.send(msg)
+                        self.lanchat.client.send(msg,
+                                            blocklist=[(ip, from_port),
+                                                       (new_ip, new_port)])
                         # Add the new peer into peers
-                        peers.add(PeerInfo(username, new_ip, int(new_port)))
+                        peers.add(PeerInfo(username, new_ip, new_port))
                         sys_msg = "{} joined the chat".format(username)
                         self.lanchat.sys_say(sys_msg)
                 client.close()
