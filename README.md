@@ -31,7 +31,7 @@ The __host config file__ is a _json_ file with following format:
 }
 ```
 
-The __peers config file__ is a _csv_ file (with `:` as delimiters) containing ip and ports of your initial peers.
+The __peers config file__ is a _csv_ file (with `:` as delimiters) containing addresses of your initial peers.
 
 For example:
 ```
