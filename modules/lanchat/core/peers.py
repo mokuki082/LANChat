@@ -80,7 +80,7 @@ class Peers():
                             continue
                         # If peer is the same as host
                         if (peer.get_ip() == self.host.get_ip() and
-                            peer.get_port() == self.host.get_port()):
+                                peer.get_port() == self.host.get_port()):
                             continue
                         peers.append(peer)
                     except ValueError:
@@ -115,11 +115,25 @@ class Peers():
         for peer in peers_to_del:
             self.peers.remove(peer)
 
-    def search(self, ip, port):
-        if not isinstance(ip, str) or not isinstance(port, int):
+    def search(self, ip=None, port=None, username=None):
+        if port and not isinstance(port, int):
             raise ValueError('Error: Port has to be an integer')
+        match_lim = 0
+        if ip:
+            match_lim += 1
+        if port:
+            match_lim += 1
+        if username:
+            match_lim += 1
         for peer in self.peers:
-            if peer.get_ip() == ip and peer.get_port() == port:
+            match = 0
+            if ip and peer.get_ip() == ip:
+                match += 1
+            if port and peer.get_port() == port:
+                match += 1
+            if username and peer.get_username() == username:
+                match += 1
+            if match == match_lim:
                 return peer
         return None
 

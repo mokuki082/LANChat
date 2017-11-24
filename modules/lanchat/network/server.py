@@ -1,8 +1,8 @@
+from modules.lanchat.core.peers import PeerInfo
+from datetime import datetime
 import socket
 import threading
 import time
-from modules.lanchat.core.peers import PeerInfo
-from datetime import datetime
 
 
 class TCPServer():
@@ -57,16 +57,21 @@ class TCPServer():
                 data = str(client.recv(1024), 'utf-8')
                 command, *args = data.split(':')
                 # Process Command
-                if command == 'msg': # A new message from peer
+                if command == 'msg':  # A new message from someone
                     username, port, *message = args
-                    message = ':'.join(message)
-                    # Render received message
-                    self.lanchat.display_message(username, message)
+                    port, message = int(port), ':'.join(message)
+                    blocklist = self.lanchat.get_blocklist()
+                    # Check if sender is in blocklist
+                    if (ip, port) not in blocklist:
+                        # Check if sender is in list of peers
+                        if self.lanchat.get_peers().search(ip=ip, port=port):
+                            # Render received message
+                            self.lanchat.display_message(username, message)
                 elif command == 'hb':  # heartbeat
                     port, username = args
                     # check if this is a new user
                     peers = self.lanchat.get_peers()
-                    found_peer = peers.search(ip, int(port))
+                    found_peer = peers.search(ip=ip, port=int(port))
                     if found_peer:  # Old user
                         # update last_seen
                         found_peer.last_seen = datetime.now()
@@ -87,7 +92,7 @@ class TCPServer():
                     from_port, new_port = int(from_port), int(new_port)
                     # check if this is a new user
                     peers = self.lanchat.get_peers()
-                    found_peer = peers.search(new_ip, new_port)
+                    found_peer = peers.search(ip=new_ip, port=new_port)
                     if not found_peer:
                         self.lanchat.sys_say(str(peers))
                         # Relay again: "sd:ip:port:username"

@@ -63,7 +63,7 @@ class Host():
     def load_config(self, config_fname):
         with open(config_fname, 'r') as config_f:
             config = json.load(config_f)
-            attr = ['username','ip','port','color']
+            attr = ['username', 'ip', 'port', 'color']
             for i in attr:
                 if i not in config:
                     raise ValueError

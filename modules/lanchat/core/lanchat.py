@@ -15,6 +15,8 @@ class LANChat():
         self.heartbeat = heartbeat.HeartBeat(self)
         # Initialize Renderer
         self.render = render.Render(self)
+        # Initialize block list
+        self.blocklist = []  # Any ip in here cannot send to/receive from host
 
     def run(self):
         # Start server
@@ -32,7 +34,7 @@ class LANChat():
         message = "msg:{}:{}:{}".format(self.host.get_username(),
                                     self.host.get_port(),
                                     message)
-        self.client.send(message)
+        self.client.send(message, blocklist=self.blocklist)
 
     def display_message(self, username, message):
         self.render.add_message(username, message)
@@ -42,6 +44,9 @@ class LANChat():
 
     def get_peers(self):
         return self.peers
+
+    def get_blocklist(self):
+        return self.blocklist
 
     def do_command(self, command):
         if command == '/quit' or command == '/exit':
@@ -62,6 +67,30 @@ class LANChat():
                 self.sys_say('No peers around')
             else:
                 self.sys_say(', '.join(users))
+            return
+        if command.startswith('/block'):
+            args = command.split()
+            blocked = 0
+            if len(args) >= 2:
+                for user in args[1:]:
+                    peer = self.peers.search(username=user)
+                    if peer:
+                        self.blocklist.append((peer.get_ip(), peer.get_port()))
+                        self.sys_say('''Blocked {}. No messages from now on will be sent to/received from this user.'''.format(user))
+                    else:
+                        self.sys_say("User {} not found".format(user))
+            return
+        if command.startswith('/unblock'):
+            args = command.split()
+            blocked = 0
+            if len(args) >= 2:
+                for user in args[1:]:
+                    peer = self.peers.search(username=user)
+                    if peer:
+                        self.blocklist.remove((peer.get_ip(), peer.get_port()))
+                        self.sys_say('Unblocked {}.'.format(user))
+                    else:
+                        self.sys_say("User {} not found".format(user))
             return
         self.sys_say('Sowy, command not found.')
 
