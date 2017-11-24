@@ -4,9 +4,8 @@ A terminal based chatroom for small networks
 
 ## Getting Started
 ### Prerequisites
-**LANChat is not supported on Windows**
 
-This program uses the `curses` python module, which is only supported for _Linux_ and _MacOS_.
+This program uses the `curses` python module, which is supported for Linux and MacOS but _not_ Windows.
 
 Sorry Windows users.
 
