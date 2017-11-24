@@ -94,7 +94,6 @@ class TCPServer():
                     peers = self.lanchat.get_peers()
                     found_peer = peers.search(ip=new_ip, port=new_port)
                     if not found_peer:
-                        self.lanchat.sys_say(str(peers))
                         # Relay again: "sd:ip:port:username"
                         msg = 'sd:{}:{}:{}'.format(new_ip, new_port, username)
                         self.lanchat.client.send(msg,

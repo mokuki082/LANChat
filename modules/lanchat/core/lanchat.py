@@ -76,7 +76,7 @@ class LANChat():
                     peer = self.peers.search(username=user)
                     if peer:
                         self.blocklist.append((peer.get_ip(), peer.get_port()))
-                        self.sys_say('''Blocked {}. No messages from now on will be sent to/received from this user.'''.format(user))
+                        self.sys_say('''Blocked {}. No messages from now on will be sent to/received from this user'''.format(user))
                     else:
                         self.sys_say("User {} not found".format(user))
             return
@@ -88,11 +88,11 @@ class LANChat():
                     peer = self.peers.search(username=user)
                     if peer:
                         self.blocklist.remove((peer.get_ip(), peer.get_port()))
-                        self.sys_say('Unblocked {}.'.format(user))
+                        self.sys_say('Unblocked {}'.format(user))
                     else:
                         self.sys_say("User {} not found".format(user))
             return
-        self.sys_say('Sowy, command not found.')
+        self.sys_say('Sowy, command not found')
 
     def sys_say(self, msg):
         self.render.add_message('SYSTEM', msg)
