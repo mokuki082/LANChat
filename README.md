@@ -1,6 +1,5 @@
 # LANChat
 A terminal based chatroom for small networks
-![](https://raw.githubusercontent.com/mokuki082/LANChat/master/screenshots/version1.0.gif)
 
 ## Getting Started
 ### Prerequisites
