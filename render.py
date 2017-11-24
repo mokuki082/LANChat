@@ -1,18 +1,17 @@
 import curses
 from curses import wrapper
-import curses.textpad as textpad
 import time
 import math
-import threading
+
 
 class Render():
     def __init__(self, lanchat):
         self.stop = False
         self.lanchat = lanchat
         self.input = ''
-        self.message_log = [] # message_log [{'user':'moku','msg':'hello'}]
-        self.msg_count = 0 # Counts the number of messages rendered on screen
-        self.curr_y = 0 # Counts the number of lines filled on screen
+        self.message_log = []  # message_log [{'user':'moku','msg':'hello'}]
+        self.msg_count = 0  # Counts the number of messages rendered on screen
+        self.curr_y = 0  # Counts the number of lines filled on screen
 
     def run(self):
         wrapper(self.main)
@@ -61,6 +60,8 @@ class Render():
         for i in range(0, curses.COLORS):
             curses.init_pair(i+1, i, -1)
 
+    def stahp(self):
+        self.stop = True
 
     def main(self, stdscr):
         self.setup()
@@ -80,21 +81,24 @@ class Render():
             time.sleep(0.02)
 
     def input_change(self, c):
-        if c not in range(0,255):
-            return
-        if c == 10: # Enter
+        if c == 10:  # Enter
             if len(self.input) > 0:
-                self.add_message(self.lanchat.get_user().get_username(),
-                                 self.input)
-                self.lanchat.send_message(self.input)
+                if self.input.startswith('/'):  # It's a command
+                    self.lanchat.do_command(self.input)
+                else:  # It's a message
+                    self.add_message(self.lanchat.get_user().get_username(),
+                                     self.input)
+                    self.lanchat.send_message(self.input)
                 self.input = ''
-        elif c == 127 or c == 263: # Backspace
+        elif c == 127 or c == 263:  # Backspace
             if len(self.input) > 0:
                 self.input = self.input[:-1]
         else:
+            if c not in range(0, 255):  # Non-printable characters
+                return
             self.input += chr(c)
 
     def add_message(self, username, message):
         self.message_log.append(
-            {'user':username,'msg':message}
+            {'user': username,'msg': message}
         )

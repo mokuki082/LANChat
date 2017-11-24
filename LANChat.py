@@ -1,13 +1,11 @@
 import threading
 import network
-import csv
 from render import Render
 
 
 class LANChat():
     def __init__(self, user):
         self.user = user
-        self.stop = False
         self.server = network.TCPServer(self)
         self.client = network.TCPClient(self)
         # Initialize Renderer
@@ -31,3 +29,9 @@ class LANChat():
 
     def get_user(self):
         return self.user
+
+    def do_command(self, command):
+        if command == '/quit' or command == '/exit':
+            # Clean up
+            self.server.stahp()
+            self.render.stahp()

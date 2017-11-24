@@ -10,7 +10,7 @@ class TCPServer():
         self.socket = socket.socket()
         self.socket.bind(lanchat.get_user().get_address())
 
-    def stop(self):
+    def stahp(self):
         self.stop = True
 
     def serve(self):
