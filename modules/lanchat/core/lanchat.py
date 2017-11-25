@@ -19,6 +19,7 @@ class LANChat():
     def run(self):
         # Start server
         threading.Thread(target=self.server.serve, daemon=True).start()
+        # Start heartbeat
         threading.Thread(target=self.heartbeat.run, daemon=True).start()
         # Start rendering
         self.render.run()
@@ -69,29 +70,32 @@ class LANChat():
             return
         if command.startswith('/block'):
             args = command.split()
-            blocked = 0
             if len(args) >= 2:
                 for user in args[1:]:
                     peer = self.peers.search(username=user)
                     if peer:
                         self.peers.blocklist.append((peer.get_ip(),
                                                      peer.get_port()))
-                        self.sys_say('''Blocked {}. \nNo messages from now on will be sent to/received from this user'''.format(user))
+                        sys_msg = 'User {} blocked.'
+                        self.sys_say(sys_msg.format(user))
                     else:
                         self.sys_say("User {} not found".format(user))
+            else:
+                self.sys_say("Give me the usernames that you wish to block")
             return
         if command.startswith('/unblock'):
             args = command.split()
-            blocked = 0
             if len(args) >= 2:
                 for user in args[1:]:
                     peer = self.peers.search(username=user)
                     if peer:
                         self.peers.blocklist.remove((peer.get_ip(),
                                                      peer.get_port()))
-                        self.sys_say('Unblocked {}'.format(user))
+                        self.sys_say('User {} unblocked'.format(user))
                     else:
                         self.sys_say("User {} not found".format(user))
+            else:
+                self.sys_say("Give me the usernames that you wish to unblock")
             return
         self.sys_say('Sowy, command not found')
 
