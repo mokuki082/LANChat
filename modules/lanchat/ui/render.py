@@ -5,7 +5,13 @@ import math
 
 
 class Render():
+    """ Linux/MacOS Terminal renderer """
     def __init__(self, lanchat):
+        """ Constructor
+
+        Keyword arguments:
+        lanchat -- a LANChat object
+        """
         self.stop = False
         self.lanchat = lanchat
         self.input = ''
@@ -14,26 +20,15 @@ class Render():
         self.curr_y = 0  # Counts the number of lines filled on screen
 
     def run(self):
+        """ Start rendering """
         wrapper(self.main)
 
-    def setup(self, stdscr):
-        self.stdscr = stdscr
-        # Clear screen
-        stdscr.clear()
-        # Declare terminal window size
-        self.h, self.w = stdscr.getmaxyx()
-        stdscr.nodelay(True)
-        # Initialize colors
-        curses.start_color()
-        curses.use_default_colors()
-        for i in range(0, curses.COLORS):
-            curses.init_pair(i + 1, i, -1)
-
     def stahp(self):
+        """ Stop the renderer """
         self.stop = True
 
-    ''' render the chatroom '''
     def render(self):
+        """ Renders the entire screen """
         # Get current window size
         h_new, w_new = self.stdscr.getmaxyx()
         # If the window has been resized
@@ -84,7 +79,24 @@ class Render():
         self.stdscr.refresh()
 
     def main(self, stdscr):
-        self.setup(stdscr)
+        """ The main program
+
+        Keyword arguments:
+        stdscr -- main screen
+        """
+        # Initialize window properties
+        self.stdscr = stdscr
+        # Clear screen
+        stdscr.clear()
+        # Declare terminal window size
+        self.h, self.w = stdscr.getmaxyx()
+        stdscr.nodelay(True)
+        # Initialize colors
+        curses.start_color()
+        curses.use_default_colors()
+        for i in range(0, curses.COLORS):
+            curses.init_pair(i + 1, i, -1)
+
         # Start rendering chatroom
         while not self.stop:
             # Get user input
@@ -95,6 +107,11 @@ class Render():
             time.sleep(0.02)
 
     def input_change(self, c):
+        """ Handler for change of input
+
+        Keyword arguments:
+        c -- a single character
+        """
         if c == 10:  # Enter
             if len(self.input) > 0:
                 if self.input.startswith('/'):  # It's a command
@@ -115,6 +132,13 @@ class Render():
             self.input += chr(c)
 
     def add_message(self, username, message, mode=None):
+        """ Add a message into the message queue to get rendered
+
+        Keyword arguments:
+        username -- username of whom the message is sent from
+        message -- the message
+        mode -- mode of the message, could be 'REVERSE'. (optional)
+        """
         if mode == 'REVERSE':
             mode = curses.A_REVERSE
         self.message_log.append(

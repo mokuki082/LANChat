@@ -1,56 +1,73 @@
 import csv
 import socket
 from datetime import datetime
+from modules.lanchat.core.host import Host
 
 
 class PeerInfo():
+    """ A class containing all peers' information """
     def __init__(self, username, ip, port, last_seen=None):
-        self.username = username
-        if not self.set_ip(ip):
-            raise ValueError('Error: Invalid IP')
-        if not self.set_port(port):
-            raise ValueError('Error: Invalid port')
-        if last_seen:
-            self.last_seen = last_seen
-        else:
-            self.last_seen = datetime.now()
+        """ Constructor
 
-    ''' Getters and setters '''
+        Keyword arguments:
+        username -- peer's username
+        ip -- peer's ip
+        port -- peer's port
+        last_seen -- timestamp of when the peer was last seen (datetime)
+        """
+        self.set_username(username)
+        self.set_ip(ip)
+        self.set_port(port)
+        self.last_seen = last_seen if last_seen else datetime.now()
+
     def get_username(self):
+        """ Get username """
         return self.username
 
     def get_ip(self):
+        """ Get IP """
         return self.ip
 
     def get_port(self):
+        """ Get port """
         return self.port
 
     def get_address(self):
+        """ Get (ip, port) """
         return (self.ip, self.port)
 
     def set_username(self, username):
-        if username and len(username) <= 16:
-            self.username = username
-            return True
-        return False
+        """ Set username, accept None """
+        if isinstance(username, str):
+            if len(username) <= 16:
+                self.username = username
+            else:
+                raise ValueError
+        else:
+            self.username = None
 
     def set_ip(self, ip):
-        if ip:
-            try:
-                socket.inet_aton(ip)
-                self.ip = ip
-                return True
-            except socket.error:
-                return False
-        return False
+        """ Set IP
+
+        Keyword arguments:
+        ip -- ip address, raises ValueError if None
+        """
+        if not isinstance(ip, str): raise ValueError
+        try:
+            socket.inet_aton(ip)
+            self.ip = ip
+        except socket.error:
+            raise ValueError
 
     def set_port(self, port):
-        if not isinstance(port, int):
-            return False
-        if port not in range(1024, 65535):
-            return False
+        """ Set port
+
+        Keyword arguments:
+        port -- an integer between 1024-65535
+        """
+        if not isinstance(port, int): raise ValueError
+        if port not in range(1024, 65535): raise ValueError
         self.port = port
-        return True
 
     def compare(self, ip, port):
         return self.ip == ip and self.port == port
@@ -58,79 +75,107 @@ class PeerInfo():
 
 class Peers():
     def __init__(self, fname, host):
+        """ Constructor
+
+        Keyword arguments:
+        fname -- filename of the peers config file
+        host -- Host object containing host information
+        """
+        if not isinstance(fname, str): raise ValueError
+        if not isinstance(host, Host): raise ValueError
         # List of UserInfos
         self.host = host
         self.peers = self.load_config(fname)
         # Initialize block list
-        self.blocklist = []  # Any ip in here cannot send to/receive from host
+        self.blacklist = []  # Any ip in here cannot send to/receive from host
 
     def __str__(self):
+        """ String representation of the class """
         return ''.join([i.ip + ':' + str(i.port) + ',' for i in self.peers])
 
-    ''' Config related functions '''
     def load_config(self, fname):
-        peers = []
+        """ Load the config file and save in self.peers """
+        if not isinstance(fname, str): ValueError
+        self.peers = []
         with open(fname, 'r') as config_f:
             # config file line format: 'ip:port'
             config_reader = csv.reader(config_f, delimiter=':')
             for row in config_reader:
-                if len(row) == 2:
-                    try:
-                        peer = PeerInfo(None, row[0], int(row[1]))
-                        # If peer is duplicated
-                        if peer in peers:
-                            continue
-                        # If peer is the same as host
-                        if (peer.get_ip() == self.host.get_ip() and
-                                peer.get_port() == self.host.get_port()):
-                            continue
-                        peers.append(peer)
-                    except ValueError:
+                if not len(row) == 2: raise ValueError
+                try:
+                    peer = PeerInfo(None, row[0], int(row[1]))
+                    # If peer is duplicated
+                    if self.search(ip=peer.ip, port=peer.port):
                         continue
+                    # If peer is the same as host
+                    if (peer.ip == self.host.get_ip() and
+                            peer.port == self.host.get_port()):
+                        continue
+                    self.peers.append(peer)
+                except ValueError:
+                    # Invalid port or ips
+                    continue
         return peers
 
     def save_config(self, fname):
+        """ Save the current peers excluding blocked peers """
+        if not isinstance(fname, str): raise ValueError
         with open(fname, 'w') as config_f:
             writer = csv.writer(config_f, delimiter=':')
             for peer in self.peers:
                 ip, port = peer.get_ip(), peer.get_port()
-                if (ip, port) not in self.blocklist:
+                if (ip, port) not in self.blacklist:
                     writer.writerow([ip, port])
 
-    ''' Basic Operations '''
     def get_peers(self):
+        """ Get a list of PeerInfo objects """
         return self.peers
 
-    ''' Add a peer object '''
     def add(self, peer):
+        """ Add a PeerInfo object into the list """
         # Check if peer is of correct type
-        if not isinstance(peer, PeerInfo):
-            return False
-        # Add peer
+        if not isinstance(peer, PeerInfo): raise ValueError
         self.peers.append(peer)
-        return True
 
-    ''' Remove the peer based on peer object, username or address '''
-    def remove(self, peer=None, username=None, address=None):
-        if peer:
-            self.peers.remove(peer)
-            return
+    def remove(self, username=None, address=None):
+        """ Remove all instances of peer based on given condition(s)
+
+        Keyword arguments:
+        username -- username of peer (optional)
+        address -- a (ip, port) tuple (optional)
+        """
+        if username and not isinstance(username, str): raise ValueError
+        if address:
+            if not isinstance(address[0], str): raise ValueError
+            if not isinstance(address[1], int): raise ValueError
 
         peers_to_del = []
+        match_cond = 2 if username and address else 1
         for peer in self.peers:
+            match = 0
             if username and username == peer.get_username:
-                    peers_to_del.append(peer)
+                    match += 1
                     continue
             if address:
                 if peer.ip == address[0] and peer.port == address[1]:
-                    peers_to_del.append(peer)
+                    match += 1
+            if match == match_cond:
+                peers_to_del.append(peer)
         for peer in peers_to_del:
             self.peers.remove(peer)
 
-    ''' Search the first peer matching all conditions given '''
     def search(self, ip=None, port=None, username=None):
-        if port and not isinstance(port, int):
-            raise ValueError('Error: Port has to be an integer')
+        """ Search the first peer matching all conditions given
+
+        Keyword arguments:
+        ip -- ip of the peer
+        port -- port of the peer
+        username -- username of the peer
+        """
+        if ip and not isinstance(ip, str): raise ValueError
+        if port and not isinstance(port, int): raise ValueError
+        if username and not isinstance(username, str): raise ValueError
+        
         match_lim = 0
         if ip:
             match_lim += 1
@@ -150,8 +195,8 @@ class Peers():
                 return peer
         return None
 
-    ''' Returns a list of usernames '''
     def get_usernames(self):
+        """ Returns a list of usernames """
         users = []
         for peer in self.peers:
             if peer.get_username():

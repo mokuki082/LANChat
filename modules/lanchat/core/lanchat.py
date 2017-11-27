@@ -1,10 +1,20 @@
 import threading
+from modules.lanchat.core import host, peers
 from modules.lanchat.network import server, client, heartbeat
 from modules.lanchat.ui import render
 
 
 class LANChat():
+    """ A class for the central control of all components """
     def __init__(self, host, peers):
+        """ Constructor.
+
+        Keyword arguments:
+        host -- a Host object containing host information
+        peers -- a Peers object containing peer information
+        """
+        if not isinstance(host, host.Host): raise ValueError
+        if not isinstance(peers, peers.Peers): raise ValueError
         # Initialize user and peers
         self.host = host  # Dictionary containing user info
         self.peers = peers  # PeerInfoList
@@ -16,7 +26,20 @@ class LANChat():
         # Initialize Renderer
         self.render = render.Render(self)
 
+    def get_host(self):
+        """ Get host information """
+        return self.host
+
+    def get_peers(self):
+        """ Get peers information """
+        return self.peers
+
+    def get_blacklist(self):
+        """ Get a list of blacklisted peers [(ip, port), ...] """
+        return self.peers.blacklist
+
     def run(self):
+        """ Run the application. """
         # Start server
         threading.Thread(target=self.server.serve, daemon=True).start()
         # Start heartbeat
@@ -25,29 +48,42 @@ class LANChat():
         self.render.run()
 
     def stahp(self):
+        """ Stop the application. """
         self.server.stahp()
+        self.heartbeat.stahp()
         self.render.stahp()
 
     def send_message(self, message):
+        """ Send a message from the host account.
+
+        Keyword arguments:
+        message - message from the host
+        """
+        if not isinstance(message, str): raise ValueError
         # Message format: "username:port:message"
         message = "msg:{}:{}:{}".format(self.host.get_username(),
-                                    self.host.get_port(),
-                                    message)
-        self.client.send(message, blocklist=self.peers.blocklist)
+                                        self.host.get_port(),
+                                        message)
+        self.client.send(message, blacklist=self.peers.blacklist)
 
     def display_message(self, username, message):
+        """ Display a message on screen.
+
+        Keyword arguments:
+        username -- whom should the message appear to be sent by
+        message -- the message
+        """
+        if not isinstance(username, str): raise ValueError
+        if not isinstance(message, str): raise ValueError
         self.render.add_message(username, message)
 
-    def get_host(self):
-        return self.host
-
-    def get_peers(self):
-        return self.peers
-
-    def get_blocklist(self):
-        return self.peers.blocklist
-
     def do_command(self, command):
+        """ Process a command from the host
+
+        Keyword arguments:
+        command -- a command that starts with '/'
+        """
+        if not isinstance(command, str): raise ValueError
         if command == '/quit' or command == '/exit':
             self.stahp()
             return
@@ -74,7 +110,7 @@ class LANChat():
                 for user in args[1:]:
                     peer = self.peers.search(username=user)
                     if peer:
-                        self.peers.blocklist.append((peer.get_ip(),
+                        self.peers.blacklist.append((peer.get_ip(),
                                                      peer.get_port()))
                         sys_msg = 'User {} blocked.'
                         self.sys_say(sys_msg.format(user))
@@ -89,7 +125,7 @@ class LANChat():
                 for user in args[1:]:
                     peer = self.peers.search(username=user)
                     if peer:
-                        self.peers.blocklist.remove((peer.get_ip(),
+                        self.peers.blacklist.remove((peer.get_ip(),
                                                      peer.get_port()))
                         self.sys_say('User {} unblocked'.format(user))
                     else:
@@ -100,4 +136,10 @@ class LANChat():
         self.sys_say('Sowy, command not found')
 
     def sys_say(self, msg):
+        """ Display a message on behalf of 'SYSTEM'
+
+        Keyword arguments:
+        msg -- the message
+        """
+        if not isinstance(msg, str): raise ValueError
         self.render.add_message('SYSTEM', msg, mode='REVERSE')

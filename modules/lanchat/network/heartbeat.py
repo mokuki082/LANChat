@@ -1,9 +1,19 @@
 import time
 from datetime import datetime
+from modules.lanchat.core.lanchat import LANChat
 
 
 class HeartBeat():
+    """ Regularly sends a hb message to peers to tell them this node
+    is still alive.
+    """
     def __init__(self, lanchat):
+        """ Constructor
+
+        Keyword arguments:
+        lanchat -- a LANChat object
+        """
+        if not isinstance(lanchat, LANChat)
         self.stop = False
         self.lanchat = lanchat
         self.host = lanchat.get_host()
@@ -11,9 +21,13 @@ class HeartBeat():
         self.client = lanchat.client  # For broadcasting messages
 
     def stahp(self):
+        """ Stop heartbeat """
         self.stop = True
 
     def run(self):
+        """ Sends hb messages to all clients and remove peers that are
+        disconnected for more than 5 seconds
+        """
         while not self.stop:
             # Broadcast a heartbeat to everyone
             self.client.send('hb:{}:{}'.format(self.host.get_port(),

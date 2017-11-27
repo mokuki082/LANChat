@@ -1,0 +1,7 @@
+- Resizing message
+- Make message length universal (with some symbol to indicate overflow)
+- make heart beat faster
+- smake a queue of messages that are sent before the heartbeat
+- Document the commands
+- One Message seemingly sent multiple times when broken into lines
+- messages should be more than 1024 characters (continuous scanning)

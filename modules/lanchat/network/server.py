@@ -1,4 +1,5 @@
 from modules.lanchat.core.peers import PeerInfo
+from modules.lanchat.core.lanchat import LANChat
 from datetime import datetime
 import socket
 import threading
@@ -6,7 +7,15 @@ import time
 
 
 class TCPServer():
+    """ Server for LANChat """
     def __init__(self, lanchat):
+        """ Constructor
+
+        Keyword arguments:
+        lanchat -- LanChat object
+        """
+        if not isinstance(lanchat, LANChat):
+            raise ValueError
         self.lanchat = lanchat
         self.stop = False
         self.socket = socket.socket()
@@ -15,9 +24,11 @@ class TCPServer():
         self.socket.bind((ip, port))
 
     def stahp(self):
+        """ Stop the server """
         self.stop = True
 
     def serve(self):
+        """ Start serving """
         # Create a thread pool
         nthreads = 4
         # threads format: [[thread_object, client_socket, client_ip]]
@@ -50,6 +61,11 @@ class TCPServer():
             thread.join()
 
     def handle(self, thread_id):
+        """ A thread in the thread pool. Handles jobs when it sees it.
+
+        Keyword arguments:
+        thread_id -- an id that matches to its index in self.threads
+        """
         while not self.stop:
             if self.threads[thread_id][1]:  # There is a job for thready!
                 client, addr = self.threads[thread_id][1:]

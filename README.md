@@ -4,8 +4,10 @@ A terminal based chatroom for small networks
 ## Getting Started
 ### Prerequisites
 
-- python3
-- This program uses the `curses` python module, which is supported for Linux and MacOS but _not_ Windows.
+- Python3
+- Linux or MacOS
+
+This program uses the `curses` python module, which is supported for Linux and MacOS but _not_ Windows.
 
 Sorry Windows users.
 
