@@ -101,7 +101,6 @@ class TCPServer():
                         sys_msg = "{} joined the chat".format(username)
                         self.lanchat.sys_say(sys_msg)
                 elif command == 'sd':  # Relay
-                    print(args)
                     from_port, new_ip, new_port, username = args
                     from_port, new_port = int(from_port), int(new_port)
                     # check if this is a new user
