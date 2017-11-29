@@ -23,14 +23,16 @@ class Host():
         host -- A dictionary containing host information
         """
         # Check validity
-        if not isinstance(host, dict): raise ValueError
-        if not 'ip' in host: raise ValueError
-        if not 'port' in host: raise ValueError
-        if not 'username' in host: raise ValueError
-        if not 'color' in host: raise ValueError
-        if not host['username']: raise ValueError
-        # Set host
-        self.host = host
+        if not isinstance(host, dict):
+            raise ValueError
+        self.host = {}
+        try:
+            self.set_ip(host['ip'])
+            self.set_port(host['port'])
+            self.set_username(host['username'])
+            self.set_color(host['color'])
+        except (ValueError, KeyError):
+            raise ValueError
 
     def get_ip(self):
         """ Get the host's IP address. """
@@ -43,7 +45,8 @@ class Host():
         ip -- a string
         """
         # Check validity
-        if not self.check_ip(ip): raise ValueError
+        if not self.check_ip(ip):
+            raise ValueError
         self.host['ip'] = ip
 
     def get_port(self):
@@ -57,7 +60,8 @@ class Host():
         port -- an integer within the range 1024-65535
         """
         # Check validity
-        if not self.check_port(port): raise ValueError
+        if not self.check_port(port):
+            raise ValueError
         self.host['port'] = port
 
     def get_username(self):
@@ -68,15 +72,23 @@ class Host():
         """ Set the host's username.
 
         Keyword arguments:
-        username -- a string of length not greater than 16
+        username -- a string of length not greater than 16, or None
         """
-        if not isinstance(username, str): raise ValueError
-        if not len(username) <= 16: raise ValueError
-        self.host['username'] = username
+        if not isinstance(username, type(None)):
+            if not isinstance(username, str):
+                raise ValueError
+            if not len(username) <= 16:
+                raise ValueError
+            self.host['username'] = username
+        else:
+            self.host['username'] = None
 
     def get_color(self):
         """ Get the host's color """
         return self.host['color']
+
+    def set_color(self, color):
+        self.color = color
 
     def load_config(self, config_fname):
         """ Load the config file
@@ -84,7 +96,8 @@ class Host():
         Keyword arguments:
         config_fname -- host config filename
         """
-        if not isinstance(config_fname, str): raise ValueError
+        if not isinstance(config_fname, str):
+            raise ValueError
         with open(config_fname, 'r') as f:
             config = json.load(f)
             self.set_host(config)
@@ -119,7 +132,8 @@ class Host():
         Keyword arguments:
         config_fname -- filename to write to
         """
-        if not isinstance(config_fname, str): raise ValueError
+        if not isinstance(config_fname, str):
+            raise ValueError
         with open(config_fname, 'w') as f:
             content = json.dumps(self.host, sort_keys=True, indent=4)
             f.write(content)

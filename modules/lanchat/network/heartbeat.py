@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from modules.lanchat.core.lanchat import LANChat
+from modules.lanchat.core import lanchat as lanchat_api
 
 
 class HeartBeat():
@@ -13,7 +13,7 @@ class HeartBeat():
         Keyword arguments:
         lanchat -- a LANChat object
         """
-        if not isinstance(lanchat, LANChat)
+        if not isinstance(lanchat, lanchat_api.LANChat): raise ValueError
         self.stop = False
         self.lanchat = lanchat
         self.host = lanchat.get_host()
@@ -42,5 +42,5 @@ class HeartBeat():
                     sys_msg = '{} disconnected'.format(peer.username)
                     self.lanchat.sys_say(sys_msg)
                 self.lanchat.sys_say('Some peers disconnected')
-                self.peers.remove(peer=peer)
+                self.peers.remove(address=(peer.get_ip(), peer.get_port()))
             time.sleep(2)

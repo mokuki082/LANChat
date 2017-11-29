@@ -15,7 +15,7 @@ class Render():
         self.stop = False
         self.lanchat = lanchat
         self.input = ''
-        self.message_log = []  # message_log [{'user':'moku','msg':'hello'}]
+        self.message_log = []  # message_log [{'user':'moku','msg':'hello'}...]
         self.msg_count = 0  # Counts the number of messages rendered on screen
         self.curr_y = 0  # Counts the number of lines filled on screen
 

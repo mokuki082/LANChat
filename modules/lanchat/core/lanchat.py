@@ -1,6 +1,5 @@
 import threading
-from modules.lanchat.core import host, peers
-from modules.lanchat.network import server, client, heartbeat
+from modules.lanchat.network import client, heartbeat, server
 from modules.lanchat.ui import render
 
 
@@ -13,11 +12,9 @@ class LANChat():
         host -- a Host object containing host information
         peers -- a Peers object containing peer information
         """
-        if not isinstance(host, host.Host): raise ValueError
-        if not isinstance(peers, peers.Peers): raise ValueError
         # Initialize user and peers
         self.host = host  # Dictionary containing user info
-        self.peers = peers  # PeerInfoList
+        self.peers = peers  # Peers object
         # Initialize server and client
         self.server = server.TCPServer(self)
         self.client = client.TCPClient(self)
@@ -34,9 +31,9 @@ class LANChat():
         """ Get peers information """
         return self.peers
 
-    def get_blacklist(self):
-        """ Get a list of blacklisted peers [(ip, port), ...] """
-        return self.peers.blacklist
+    def get_blocklist(self):
+        """ Get a list of blocklisted peers [(ip, port), ...] """
+        return self.peers.blocklist
 
     def run(self):
         """ Run the application. """
@@ -64,7 +61,7 @@ class LANChat():
         message = "msg:{}:{}:{}".format(self.host.get_username(),
                                         self.host.get_port(),
                                         message)
-        self.client.send(message, blacklist=self.peers.blacklist)
+        self.client.send(message, blocklist=self.peers.blocklist)
 
     def display_message(self, username, message):
         """ Display a message on screen.
@@ -110,7 +107,7 @@ class LANChat():
                 for user in args[1:]:
                     peer = self.peers.search(username=user)
                     if peer:
-                        self.peers.blacklist.append((peer.get_ip(),
+                        self.peers.blocklist.append((peer.get_ip(),
                                                      peer.get_port()))
                         sys_msg = 'User {} blocked.'
                         self.sys_say(sys_msg.format(user))
@@ -125,7 +122,7 @@ class LANChat():
                 for user in args[1:]:
                     peer = self.peers.search(username=user)
                     if peer:
-                        self.peers.blacklist.remove((peer.get_ip(),
+                        self.peers.blocklist.remove((peer.get_ip(),
                                                      peer.get_port()))
                         self.sys_say('User {} unblocked'.format(user))
                     else:
@@ -141,5 +138,6 @@ class LANChat():
         Keyword arguments:
         msg -- the message
         """
-        if not isinstance(msg, str): raise ValueError
+        if not isinstance(msg, str):
+            raise ValueError
         self.render.add_message('SYSTEM', msg, mode='REVERSE')

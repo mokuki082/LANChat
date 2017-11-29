@@ -1,4 +1,4 @@
-from modules.lanchat.core import host, peers, lanchat
+from modules.lanchat.core import peers, lanchat, host
 import sys
 import os
 

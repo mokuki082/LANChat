@@ -1,7 +1,6 @@
 import csv
 import socket
 from datetime import datetime
-from modules.lanchat.core.host import Host
 
 
 class PeerInfo():
@@ -82,12 +81,12 @@ class Peers():
         host -- Host object containing host information
         """
         if not isinstance(fname, str): raise ValueError
-        if not isinstance(host, Host): raise ValueError
-        # List of UserInfos
+        # Initialize host
         self.host = host
-        self.peers = self.load_config(fname)
+        # Initialize peers
+        self.load_config(fname)
         # Initialize block list
-        self.blacklist = []  # Any ip in here cannot send to/receive from host
+        self.blocklist = []  # Any ip in here cannot send to/receive from host
 
     def __str__(self):
         """ String representation of the class """
@@ -115,7 +114,6 @@ class Peers():
                 except ValueError:
                     # Invalid port or ips
                     continue
-        return peers
 
     def save_config(self, fname):
         """ Save the current peers excluding blocked peers """
@@ -124,7 +122,7 @@ class Peers():
             writer = csv.writer(config_f, delimiter=':')
             for peer in self.peers:
                 ip, port = peer.get_ip(), peer.get_port()
-                if (ip, port) not in self.blacklist:
+                if (ip, port) not in self.blocklist:
                     writer.writerow([ip, port])
 
     def get_peers(self):
@@ -175,7 +173,7 @@ class Peers():
         if ip and not isinstance(ip, str): raise ValueError
         if port and not isinstance(port, int): raise ValueError
         if username and not isinstance(username, str): raise ValueError
-        
+
         match_lim = 0
         if ip:
             match_lim += 1

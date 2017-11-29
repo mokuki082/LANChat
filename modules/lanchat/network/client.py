@@ -1,7 +1,5 @@
 import socket
 import threading
-from modules.lanchat.core.lanchat import LANChat
-from modules.lanchat.core.peers import PeerInfo
 
 
 class TCPClient():
@@ -12,22 +10,23 @@ class TCPClient():
         Keyword arguments:
         lanchat -- a LANChat object
         """
-        if not isinstance(lanchat, LANChat): raise ValueError
         self.lanchat = lanchat
         self.peers = lanchat.get_peers()
 
-    def send(self, message, blacklist=[]):
+    def send(self, message, blocklist=[]):
         """ Broadcast a message to surrounding peers
 
         Keyword arguments:
         message -- the message
-        blacklist -- Peers that message is not sent to. [(ip, port), ...]
+        blocklist -- Peers that message is not sent to. [(ip, port), ...]
         """
-        if not isinstance(message, str): raise ValueError
-        if not isinstance(blacklist, list): raise ValueError
+        if not isinstance(message, str):
+            raise ValueError
+        if not isinstance(blocklist, list):
+            raise ValueError
         for peer in self.peers.get_peers():
             block = False
-            for ip, port in blacklist:
+            for ip, port in blocklist:
                 if peer.compare(ip, port):
                     block = True
                     break
@@ -44,8 +43,8 @@ class TCPClient():
         peer -- Peer object
         message -- The message
         """
-        if not isinstance(peer, PeerInfo): raise ValueError
-        if not isinstance(message, str): raise ValueError
+        if not isinstance(message, str):
+            raise ValueError
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 if not isinstance(peer.get_port(), int):
