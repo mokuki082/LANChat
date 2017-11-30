@@ -85,14 +85,17 @@ class Peers():
         fname -- filename of the peers config file
         host -- Host object containing host information
         """
-        if not isinstance(fname, str):
-            raise ValueError('Invalid filename type')
         # Initialize host
         self.host = host
-        # Initialize peers
-        self.load_config(fname)
         # Initialize block list
         self.blocklist = []  # Any ip in here cannot send to/receive from host
+        if not fname:  # No filenames specified
+            self.peers = []
+            return
+        if not isinstance(fname, str):
+            raise ValueError('Invalid filename type')
+        # Initialize peers
+        self.load_config(fname)
 
     def __str__(self):
         """ String representation of the class """

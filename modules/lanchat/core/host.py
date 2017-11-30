@@ -10,7 +10,8 @@ class Host():
         Keyword arguments:
         config_fname -- filename of the host config file
         """
-        self.load_config(config_fname)
+        if config_fname:
+            self.load_config(config_fname)
 
     def get_host(self):
         """ Get a dictionary containing host information. """

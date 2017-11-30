@@ -11,3 +11,6 @@ test*
 # Assets
 *.ai
 assets*
+
+# Config files
+config*
