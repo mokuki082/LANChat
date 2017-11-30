@@ -88,6 +88,8 @@ class TCPServer():
                     if found_peer:  # Old user
                         # update last_seen
                         found_peer.last_seen = datetime.now()
+                        # update username
+                        found_peer.username = username
                     else:  # New user'
                         # Add the user into peers
                         p.add(peers.PeerInfo(username, ip, int(port)))
