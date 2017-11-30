@@ -1,5 +1,6 @@
 import json
 import socket
+import os
 
 
 class Host():
@@ -135,6 +136,13 @@ class Host():
         """
         if not isinstance(config_fname, str):
             raise ValueError
+        # Create directories if doesn't exist
+        if not os.path.exists(os.path.dirname(config_fname)):
+            try:
+                os.makedirs(os.path.dirname(config_fname))
+            except OSError as exc: # Guard against race condition
+                if exc.errno != errno.EEXIST:
+                    raise
         with open(config_fname, 'w') as f:
             content = json.dumps(self.host, sort_keys=True, indent=4)
             f.write(content)
