@@ -1,4 +1,4 @@
-![LANChat](http://url/to/img.png)
+![LANChat](https://raw.githubusercontent.com/mokuki082/LANChat/master/img/logo.png)
 
 ## Getting Started
 ### Prerequisites
