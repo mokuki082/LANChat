@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from modules.lanchat.core import peers, lanchat, host
 import sys
 import os
