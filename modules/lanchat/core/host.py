@@ -88,7 +88,7 @@ class Host():
         return self.host['color']
 
     def set_color(self, color):
-        self.color = color
+        self.host['color'] = color
 
     def load_config(self, config_fname):
         """ Load the config file

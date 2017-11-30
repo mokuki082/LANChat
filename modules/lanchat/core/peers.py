@@ -51,7 +51,8 @@ class PeerInfo():
         Keyword arguments:
         ip -- ip address, raises ValueError if None
         """
-        if not isinstance(ip, str): raise ValueError
+        if not isinstance(ip, str):
+            raise ValueError
         try:
             socket.inet_aton(ip)
             self.ip = ip
@@ -64,8 +65,10 @@ class PeerInfo():
         Keyword arguments:
         port -- an integer between 1024-65535
         """
-        if not isinstance(port, int): raise ValueError
-        if port not in range(1024, 65535): raise ValueError
+        if not isinstance(port, int):
+            raise ValueError
+        if port not in range(1024, 65535):
+            raise ValueError
         self.port = port
 
     def compare(self, ip, port):
@@ -80,7 +83,8 @@ class Peers():
         fname -- filename of the peers config file
         host -- Host object containing host information
         """
-        if not isinstance(fname, str): raise ValueError
+        if not isinstance(fname, str):
+            raise ValueError
         # Initialize host
         self.host = host
         # Initialize peers
@@ -94,20 +98,24 @@ class Peers():
 
     def load_config(self, fname):
         """ Load the config file and save in self.peers """
-        if not isinstance(fname, str): ValueError
+        if not isinstance(fname, str):
+            raise ValueError
         self.peers = []
         with open(fname, 'r') as config_f:
             # config file line format: 'ip:port'
             config_reader = csv.reader(config_f, delimiter=':')
             for row in config_reader:
-                if not len(row) == 2: raise ValueError
+                if not len(row) == 2:
+                    raise ValueError
                 try:
                     peer = PeerInfo(None, row[0], int(row[1]))
                     # If peer is duplicated
                     if self.search(ip=peer.ip, port=peer.port):
                         continue
                     # If peer is the same as host
-                    if (peer.ip == self.host.get_ip() and
+                    if ((peer.ip == self.host.get_ip() or
+                            {peer.ip, self.host.get_ip} ==
+                            {'0.0.0.0', '127.0.0.1'}) and
                             peer.port == self.host.get_port()):
                         continue
                     self.peers.append(peer)
@@ -117,7 +125,8 @@ class Peers():
 
     def save_config(self, fname):
         """ Save the current peers excluding blocked peers """
-        if not isinstance(fname, str): raise ValueError
+        if not isinstance(fname, str):
+            raise ValueError
         with open(fname, 'w') as config_f:
             writer = csv.writer(config_f, delimiter=':')
             for peer in self.peers:
@@ -132,7 +141,8 @@ class Peers():
     def add(self, peer):
         """ Add a PeerInfo object into the list """
         # Check if peer is of correct type
-        if not isinstance(peer, PeerInfo): raise ValueError
+        if not isinstance(peer, PeerInfo):
+            raise ValueError
         self.peers.append(peer)
 
     def remove(self, username=None, address=None):
@@ -142,10 +152,13 @@ class Peers():
         username -- username of peer (optional)
         address -- a (ip, port) tuple (optional)
         """
-        if username and not isinstance(username, str): raise ValueError
+        if username and not isinstance(username, str):
+            raise ValueError
         if address:
-            if not isinstance(address[0], str): raise ValueError
-            if not isinstance(address[1], int): raise ValueError
+            if not isinstance(address[0], str):
+                raise ValueError
+            if not isinstance(address[1], int):
+                raise ValueError
 
         peers_to_del = []
         match_cond = 2 if username and address else 1
@@ -170,9 +183,12 @@ class Peers():
         port -- port of the peer
         username -- username of the peer
         """
-        if ip and not isinstance(ip, str): raise ValueError
-        if port and not isinstance(port, int): raise ValueError
-        if username and not isinstance(username, str): raise ValueError
+        if ip and not isinstance(ip, str):
+            raise ValueError
+        if port and not isinstance(port, int):
+            raise ValueError
+        if username and not isinstance(username, str):
+            raise ValueError
 
         match_lim = 0
         if ip:
