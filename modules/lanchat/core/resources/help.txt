@@ -1,0 +1,8 @@
+List of commands:
+	/quit - exit LANChat
+	/save_config <host config> <peers config> - save the current config file
+	/show_peers - show current peers
+	/block <usernames...> - block certain peers
+	/unblock <usernames...> - unblock certain peers
+	/help - display help screen
+
