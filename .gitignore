@@ -6,4 +6,4 @@ __pycache__
 .ropeproject
 
 # Test files
-test
+test*

@@ -178,7 +178,7 @@ class Render():
             if len(self.input) > 0:
                 self.input = self.input[:-1]
         else:
-            if c not in range(0, 255):  # Non-printable characters
+            if c not in range(0, 127):  # Non-printable characters
                 return
             if len(self.input) >= self.max_input:
                 return
