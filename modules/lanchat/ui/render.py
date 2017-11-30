@@ -2,6 +2,7 @@ import curses
 from curses import wrapper
 import time
 import math
+import os
 
 
 class Render():
@@ -22,6 +23,10 @@ class Render():
 
     def run(self):
         """ Start rendering """
+        # Clear screen avoid glitchy display to do with scrolls
+        # Warning: Not sustainable, will use pads in future
+        for _ in range(3):
+            os.system('clear')
         wrapper(self.main)
 
     def stahp(self):
@@ -86,6 +91,7 @@ class Render():
                 m = ln[bp * (self.w - 18):(bp + 1) * (self.w - 18)]
 
     def render_input(self):
+        """ Render the input field """
         prompt = "Chat >>> "
         message = self.input
         if len(message) + len(prompt) > self.w:

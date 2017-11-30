@@ -43,4 +43,4 @@ class HeartBeat():
                     self.lanchat.sys_say(sys_msg)
                 self.lanchat.sys_say('Some peers disconnected')
                 self.peers.remove(address=(peer.get_ip(), peer.get_port()))
-            time.sleep(2)
+            time.sleep(1)
