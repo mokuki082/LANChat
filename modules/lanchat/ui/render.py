@@ -18,6 +18,7 @@ class Render():
         self.message_log = []  # message_log [{'user':'moku','msg':'hello'}...]
         self.msg_count = 0  # Counts the number of messages rendered on screen
         self.curr_y = 0  # Counts the number of lines filled on screen
+        self.max_input = 900 # Maximum input size
 
     def run(self):
         """ Start rendering """
@@ -26,6 +27,72 @@ class Render():
     def stahp(self):
         """ Stop the renderer """
         self.stop = True
+
+    ''' Sub functions '''
+    def calc_lines(self):
+        """ Calculate how many lines for each message """
+        line = []
+        for msg in self.message_log:
+            msg = msg['msg']
+            if '\n' not in msg:
+                line.append(math.ceil((len(msg) + 18) / self.w))
+            else:
+                msg = msg.split('\n')
+                total = 0
+                for i in msg:
+                    total += math.ceil((len(i) + 18) / self.w)
+                line.append(total)
+        return line
+
+    def del_old_msg(self, line):
+        """ Delete old messages to fit new messages in
+
+        Keyword arguments:
+        line -- a list of numbers representing the number of lines needed
+                for each message
+        """
+        if not isinstance(line, list):
+            raise ValueError
+        lines_occupied = sum(line)
+        while lines_occupied >= self.h - 2:  # Last 2 lines are for input
+            self.curr_y = 0  # Need to re-render to get rid of old messages
+            self.msg_count = 0
+            lines_occupied -= line.pop(0)
+            self.message_log.pop(0)
+
+    def render_message(self, username, message, mode=None):
+        """ Render one message on screen
+
+        Keyword arguments:
+        username -- who sent the message
+        message -- the message
+        """
+        lines = message.split('\n')
+        for ln in lines:
+            bp = 0
+            m = ln[bp * (self.w - 18):(bp + 1) * (self.w - 18)]
+            while m:
+                m = m.ljust(self.w - 18)
+                u = ' ' * 18
+                if bp == 0 and ln == lines[0]:
+                    u = username.ljust(18)
+                if mode:
+                    self.stdscr.addstr(self.curr_y, 0, u + m + '\n',
+                                       mode)
+                else:
+                    self.stdscr.addstr(self.curr_y, 0, u + m + '\n')
+                self.curr_y += 1
+                bp += 1
+                m = ln[bp * (self.w - 18):(bp + 1) * (self.w - 18)]
+
+    def render_input(self):
+        prompt = "Chat >>> "
+        message = self.input
+        if len(message) + len(prompt) > self.w:
+            message = message[len(message) + len(prompt) + 4 - self.w:]
+            message = '...' + message
+        self.stdscr.addstr(self.h - 1, 0, (self.w - 1) * ' ')
+        self.stdscr.addstr(self.h - 1, 0, prompt + message)
 
     def render(self):
         """ Renders the entire screen """
@@ -39,42 +106,22 @@ class Render():
             # Restore message count and y so all messages gets rerendered
             self.msg_count = 0
             self.curr_y = 0
-        # How many lines for each message
-        line = []
-        for msg in self.message_log:
-            msg = msg['msg']
-            if '\n' not in msg:
-                line.append(math.ceil((len(msg) + 18) / self.w))
-            else:
-                msg = msg.split('\n')
-                for i in msg:
-                    line.append(math.ceil((len(i) + 18) / self.w))
+        # Calculate how many lines for each message
+        line = self.calc_lines()
         # Delete old messges to fit the new messages in
-        lines_occupied = sum(line)
-        while lines_occupied >= self.h - 2:  # Last 2 lines are for input
-            self.curr_y = 0  # Need to re-render to get rid of old messages
-            self.msg_count = 0
-            lines_occupied -= line.pop(0)
-            self.message_log.pop(0)
+        self.del_old_msg(line)
         # Render unrendered messages
         for i, msg in enumerate(self.message_log[self.msg_count:]):
             self.msg_count += 1
-            for y in range(line[i]):  # Render each line
-                ms = msg['msg'].split('\n')
-                for i in ms:
-                    self.curr_y += 1
-                    m = i[y * (self.w - 18):(y + 1) * (self.w - 18)]
-                    m = m.ljust(self.w - 18)
-                    u = msg['user'].ljust(18) if i == ms[0] else ' ' * 18
-                    if msg['mode']:
-                        self.stdscr.addstr(self.curr_y, 0, u + m + '\n',
-                                           msg['mode'])
-                    else:
-                        self.stdscr.addstr(self.curr_y, 0, u + m + '\n')
+            try:
+                self.render_message(msg['user'], msg['msg'], mode=msg['mode'])
+            except curses.error:
+                return
         # Render text input
-        self.stdscr.addstr(self.h - 2, 0, ' ' * (self.w * 2 - 1))
-        self.stdscr.addstr(self.h - 1, 0,
-                           "Chat >>> {}".format(self.input))
+        try:
+            self.render_input()
+        except curses.error:
+            return
         # Refresh window
         self.stdscr.refresh()
 
@@ -127,7 +174,7 @@ class Render():
         else:
             if c not in range(0, 255):  # Non-printable characters
                 return
-            if len(self.input) >= self.w - 10:
+            if len(self.input) >= self.max_input:
                 return
             self.input += chr(c)
 
