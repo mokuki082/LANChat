@@ -17,7 +17,29 @@ if __name__ == '__main__':
     # Load user information from config file
     try:
         user = host.Host(host_config_fname)
-        peers = peers.Peers(peer_config_fname, user)
+        given_peers = peers.Peers(peer_config_fname, user)
+        # If peers is empty, get a list of peers from stdin
+        if not given_peers.get_peers():
+            print("You haven't put in any peers in the config file!")
+            print("Put down a list of 'ip port' pairs and enter a blank line when done.")
+            address = input("")
+            while address or not given_peers.get_peers():
+                if not address:
+                    print("You haven't entered any peers yet!")
+                elif len(address.split()) == 2:
+                    ip, port = address.split()
+                    try:
+                        given_peers.add(peers.PeerInfo(None, ip, int(port)))
+                        print("Peer added")
+                    except ValueError as e:
+                        print("Given ip/port is invalid. Please try again.")
+                else:
+                    print("Usage: 'ip port'")
+                address = input("")
+            save_config = input("Would you like to save this as default config file? (y/n) ")
+            if save_config == 'y':
+                given_peers.save_config(os.path.join('config', 'peers.csv'))
+                print('Config saved')
         # If user hasn't specified a username
         if not user.get_username():
             # Ask for user's username
@@ -27,7 +49,7 @@ if __name__ == '__main__':
             user.set_username(username)
 
         # Initialize LANChat API
-        lanchat = lanchat.LANChat(user, peers)
+        lanchat = lanchat.LANChat(user, given_peers)
         # Start lanchat
         lanchat.run()
         exit(0)

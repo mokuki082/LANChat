@@ -26,7 +26,7 @@ Note:
 The __host config file__ is a _json_ file with following format:
 ```
 {
-  "ip": "127.0.0.1",    // Host ip address
+  "ip": "0.0.0.0",    // Host ip address
   "port": 8080,         // Host port number 0-65535
   "username": null,     // Host username, default to null
   "color": null         // Unused in the current version

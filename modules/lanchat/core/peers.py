@@ -41,9 +41,11 @@ class PeerInfo():
             if len(username) <= 16:
                 self.username = username
             else:
-                raise ValueError
+                raise ValueError('Username too long')
+        elif isinstance(username, type(None)):
+            self.username = username
         else:
-            self.username = None
+            raise ValueError('Invalid username type')
 
     def set_ip(self, ip):
         """ Set IP
@@ -52,12 +54,12 @@ class PeerInfo():
         ip -- ip address, raises ValueError if None
         """
         if not isinstance(ip, str):
-            raise ValueError
+            raise ValueError('Invalid ip type')
         try:
             socket.inet_aton(ip)
             self.ip = ip
         except socket.error:
-            raise ValueError
+            raise ValueError('Invalid ip')
 
     def set_port(self, port):
         """ Set port
@@ -66,9 +68,9 @@ class PeerInfo():
         port -- an integer between 1024-65535
         """
         if not isinstance(port, int):
-            raise ValueError
+            raise ValueError('Invalid port type')
         if port not in range(1024, 65535):
-            raise ValueError
+            raise ValueError('Invalid port range')
         self.port = port
 
     def compare(self, ip, port):
@@ -84,7 +86,7 @@ class Peers():
         host -- Host object containing host information
         """
         if not isinstance(fname, str):
-            raise ValueError
+            raise ValueError('Invalid filename type')
         # Initialize host
         self.host = host
         # Initialize peers
@@ -96,29 +98,35 @@ class Peers():
         """ String representation of the class """
         return ''.join([i.ip + ':' + str(i.port) + ',' for i in self.peers])
 
+    def peer_is_valid(self, peer):
+        # If peer is duplicated
+        if self.search(ip=peer.ip, port=peer.port):
+            return False
+        # If peer is the same as host
+        if ((peer.get_ip() == self.host.get_ip() or
+                {peer.get_ip(), self.host.get_ip()} ==
+                {'0.0.0.0', '127.0.0.1'}) and
+                peer.port == self.host.get_port()):
+            return False
+        return True
+
     def load_config(self, fname):
         """ Load the config file and save in self.peers """
         if not isinstance(fname, str):
-            raise ValueError
+            raise ValueError('Invalid filename type')
         self.peers = []
         with open(fname, 'r') as config_f:
             # config file line format: 'ip:port'
             config_reader = csv.reader(config_f, delimiter=':')
             for row in config_reader:
+                if not len(row):
+                    continue
                 if not len(row) == 2:
-                    raise ValueError
+                    raise ValueError('Invalid config format')
                 try:
                     peer = PeerInfo(None, row[0], int(row[1]))
-                    # If peer is duplicated
-                    if self.search(ip=peer.ip, port=peer.port):
-                        continue
-                    # If peer is the same as host
-                    if ((peer.get_ip() == self.host.get_ip() or
-                            {peer.get_ip(), self.host.get_ip()} ==
-                            {'0.0.0.0', '127.0.0.1'}) and
-                            peer.port == self.host.get_port()):
-                        continue
-                    self.peers.append(peer)
+                    if self.peer_is_valid(peer):
+                        self.peers.append(peer)
                 except ValueError:
                     # Invalid port or ips
                     continue
@@ -126,7 +134,7 @@ class Peers():
     def save_config(self, fname):
         """ Save the current peers excluding blocked peers """
         if not isinstance(fname, str):
-            raise ValueError
+            raise ValueError('Invalid filename type')
         with open(fname, 'w') as config_f:
             writer = csv.writer(config_f, delimiter=':')
             for peer in self.peers:
@@ -140,10 +148,10 @@ class Peers():
 
     def add(self, peer):
         """ Add a PeerInfo object into the list """
-        # Check if peer is of correct type
-        if not isinstance(peer, PeerInfo):
+        if self.peer_is_valid(peer):
+            self.peers.append(peer)
+        else:
             raise ValueError
-        self.peers.append(peer)
 
     def remove(self, username=None, address=None):
         """ Remove all instances of peer based on given condition(s)
@@ -153,12 +161,12 @@ class Peers():
         address -- a (ip, port) tuple (optional)
         """
         if username and not isinstance(username, str):
-            raise ValueError
+            raise ValueError('Invalid username type')
         if address:
             if not isinstance(address[0], str):
-                raise ValueError
+                raise ValueError('Invalid ip type')
             if not isinstance(address[1], int):
-                raise ValueError
+                raise ValueError('Invalid port type')
 
         peers_to_del = []
         match_cond = 2 if username and address else 1
@@ -184,11 +192,11 @@ class Peers():
         username -- username of the peer
         """
         if ip and not isinstance(ip, str):
-            raise ValueError
+            raise ValueError('Invalid ip type')
         if port and not isinstance(port, int):
-            raise ValueError
+            raise ValueError('Invalid port type')
         if username and not isinstance(username, str):
-            raise ValueError
+            raise ValueError('Invalid username type')
 
         match_lim = 0
         if ip:
