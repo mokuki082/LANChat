@@ -1,5 +1,4 @@
-# LANChat
-A terminal based chatroom for small networks
+![LANChat](http://url/to/img.png)
 
 ## Getting Started
 ### Prerequisites
