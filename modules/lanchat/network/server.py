@@ -76,10 +76,7 @@ class TCPServer():
                     blocklist = self.lanchat.get_blocklist()
                     # Check if sender is in blocklist
                     if (ip, port) not in blocklist:
-                        # Check if sender is in list of peers
-                        if self.lanchat.get_peers().search(ip=ip, port=port):
-                            # Render received message
-                            self.lanchat.display_message(username, message)
+                        self.lanchat.display_message(username, message)
                 elif command == 'hb':  # heartbeat
                     port, username = args
                     # check if this is a new user

@@ -113,8 +113,8 @@ class Peers():
                     if self.search(ip=peer.ip, port=peer.port):
                         continue
                     # If peer is the same as host
-                    if ((peer.ip == self.host.get_ip() or
-                            {peer.ip, self.host.get_ip} ==
+                    if ((peer.get_ip() == self.host.get_ip() or
+                            {peer.get_ip(), self.host.get_ip()} ==
                             {'0.0.0.0', '127.0.0.1'}) and
                             peer.port == self.host.get_port()):
                         continue
@@ -214,5 +214,5 @@ class Peers():
         users = []
         for peer in self.peers:
             if peer.get_username():
-                users.append(peer.get_usernames)
+                users.append(peer.get_username())
         return users

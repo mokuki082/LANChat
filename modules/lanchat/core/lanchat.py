@@ -130,7 +130,7 @@ class LANChat():
             else:
                 self.sys_say("Give me the usernames that you wish to unblock")
             return
-        self.sys_say('Sowy, command not found')
+        self.sys_say('Sowy, command not found. Try /help')
 
     def sys_say(self, msg):
         """ Display a message on behalf of 'SYSTEM'
