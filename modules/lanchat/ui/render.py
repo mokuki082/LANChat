@@ -97,8 +97,9 @@ class Render():
         if len(message) + len(prompt) > self.w:
             message = message[len(message) + len(prompt) + 4 - self.w:]
             message = '...' + message
-        self.stdscr.addstr(self.h - 1, 0, (self.w - 1) * ' ')
+        self.stdscr.hline(self.h - 1, 0, ord(' '), self.w)
         self.stdscr.addstr(self.h - 1, 0, prompt + message)
+        # Move cursor to the end of input
 
     def render(self):
         """ Renders the entire screen """
@@ -121,6 +122,12 @@ class Render():
             self.msg_count += 1
             try:
                 self.render_message(msg['user'], msg['msg'], mode=msg['mode'])
+            except curses.error:
+                return
+        # Clear screen after the last message
+        for offset in range(self.h - self.curr_y - 1):
+            try:
+                self.stdscr.hline(self.curr_y + offset, 0, ord(' '), self.w)
             except curses.error:
                 return
         # Render text input
