@@ -71,59 +71,87 @@ class TCPServer():
                 command, *args = data.split(':')
                 # Process Command
                 if command == 'msg':  # A new message from someone
-                    username, port, *message = args
-                    port, message = int(port), ':'.join(message)
+                    try:
+                        username, port, *message = args
+                        port, message = int(port), ':'.join(message)
+                    except ValueError:
+                        self.thread_clr(thread_id)
+                        continue
                     blocklist = self.lanchat.get_blocklist()
                     # Check if sender is in blocklist
                     if (ip, port) not in blocklist:
-                        self.lanchat.display_message(username, message)
+                        # Check if sender is in peers
+                        if (self.lanchat.get_peers().search(username=username)
+                            and message):
+                            self.lanchat.display_message(username, message)
                 elif command == 'hb':  # heartbeat
-                    port, username = args
+                    try:
+                        port, username = args
+                        port = int(port)
+                    except ValueError:
+                        self.thread_clr(thread_id)
+                        continue
                     # check if this is a new user
                     p = self.lanchat.get_peers()
-                    found_peer = p.search(ip=ip, port=int(port))
+                    found_peer = p.search(ip=ip, port=port)
                     if found_peer:  # Old user
                         # update last_seen
                         found_peer.last_seen = datetime.now()
                         # update username
-                        found_peer.username = username
+                        try:
+                            found_peer.set_username(username)
+                        except ValueError:
+                            self.thread_clr(thread_id)
+                            continue
                     else:  # New user'
                         # Add the user into peers
-                        p.add(peers.PeerInfo(username, ip, int(port)))
+                        try:
+                            p.add(peers.PeerInfo(username, ip, port))
+                        except ValueError:
+                            self.thread_clr(thread_id)
+                            continue
                         # Relay: "sd:port:new_ip:new_port:new_username"
                         host = self.lanchat.get_host()
                         msg = 're:{}:{}:{}:{}'.format(host.get_port(),
                                                       ip, port, username)
                         self.lanchat.client.send(msg,
-                                                 blocklist=[(ip, int(port))])
+                                                 blocklist=[(ip, port)])
 
                         sys_msg = "{} joined the chat".format(username)
                         self.lanchat.sys_say(sys_msg)
                 elif command == 're':  # Relay
-                    if len(args) == 4:
+                    try:
                         from_port, new_ip, new_port, username = args
                         from_port, new_port = int(from_port), int(new_port)
-                        # check if this is a new user
-                        p = self.lanchat.get_peers()
-                        found_peer = p.search(ip=new_ip, port=new_port)
-                        if not found_peer:
-                            # Relay again: "sd:ip:port:username"
-                            msg = 're:{}:{}:{}:{}'.format(host.get_port(),
-                                                          new_ip,
-                                                          new_port,
-                                                          username)
-                            self.lanchat.client.send(msg,
-                                                blocklist=[(ip, from_port),
-                                                           (new_ip, new_port)])
-                            # Add the new peer into peers
+                    except ValueError:
+                        self.thread_clr(thread_id)
+                        continue
+                    # check if this is a new user
+                    p = self.lanchat.get_peers()
+                    found_peer = p.search(ip=new_ip, port=new_port)
+                    if not found_peer:
+                        # Relay again: "sd:ip:port:username"
+                        msg = 're:{}:{}:{}:{}'.format(host.get_port(),
+                                                      new_ip,
+                                                      new_port,
+                                                      username)
+                        self.lanchat.client.send(msg,
+                                            blocklist=[(ip, from_port),
+                                                       (new_ip, new_port)])
+                        # Add the new peer into peers
+                        try:
                             p.add(peers.PeerInfo(username, new_ip, new_port))
                             sys_msg = "{} joined the chat".format(username)
                             self.lanchat.sys_say(sys_msg)
-                    else:
-                        self.lanchat.sys_say(str(args))
-                client.close()
-                # Clear client
-                self.threads[thread_id][1] = None
-                # Clear address
-                self.threads[thread_id][2] = None
+                        except ValueError:
+                            self.thread_clr(thread_id)
+                            continue
+                self.thread_clr(thread_id)
             time.sleep(0.05)
+
+    def thread_clr(self, thread_id):
+        self.threads[thread_id][1].close()
+        # Clear client
+        self.threads[thread_id][1] = None
+        # Clear address
+        self.threads[thread_id][2] = None
