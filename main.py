@@ -23,10 +23,8 @@ if __name__ == '__main__':
             print("You haven't put in any peers in the config file!")
             print("Put down a list of 'ip port' pairs and enter a blank line when done.")
             address = input("")
-            while address or not given_peers.get_peers():
-                if not address:
-                    print("You haven't entered any peers yet!")
-                elif len(address.split()) == 2:
+            while address:
+                if len(address.split()) == 2:
                     ip, port = address.split()
                     try:
                         given_peers.add(peers.PeerInfo(None, ip, int(port)))
