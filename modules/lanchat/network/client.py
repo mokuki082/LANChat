@@ -54,8 +54,10 @@ class TCPClient():
             protocol = "msg:{port}:{user}:{message}"
             return protocol.format(port=args[0], user=args[1], message=args[2])
         if protocol == 'msgs':  # Secure message
-            if receiver and receiver.get_pubk() and self.lanchat.has_encryption:
+            if (receiver and receiver.get_pubk() and
+                    self.lanchat.has_encryption):
                 pubk = receiver.get_pubk()
+                message = args[0]
                 return self.lanchat.e2e.msgs_protocol_send(message, pubk)
             else:
                 raise ValueError
@@ -89,8 +91,8 @@ class TCPClient():
                     raise ValueError("Error: Port has to be an integer")
                 address = (peer.get_ip(), peer.get_port())
                 sock.connect(address)
-                message = self.construct_protocol(protocol, *args, receiver=peer)
-                self.lanchat.sys_say(peer.get_ip() +' '+ str(peer.get_port())+ ' ' +message)
+                message = self.construct_protocol(protocol, *args,
+                                                  receiver=peer)
                 sock.sendall(bytes(message, 'utf-8'))
         except ConnectionRefusedError:
             # Let heartbeat deal with this
