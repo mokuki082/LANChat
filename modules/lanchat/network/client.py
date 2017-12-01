@@ -13,14 +13,15 @@ class TCPClient():
         self.lanchat = lanchat
         self.peers = lanchat.get_peers()
 
-    def send(self, message, blocklist=[]):
+    def send(self, protocol, *args, blocklist=[]):
         """ Broadcast a message to surrounding peers
 
         Keyword arguments:
-        message -- the message
-        blocklist -- Peers that message is not sent to. [(ip, port), ...]
+        protocol -- the protocol used for this message
+        *args -- the arguments needed for the protocol
+        blocklist -- a list of peers to block (optional)
         """
-        if not isinstance(message, str):
+        if not isinstance(protocol, str):
             raise ValueError
         if not isinstance(blocklist, list):
             raise ValueError
@@ -32,18 +33,52 @@ class TCPClient():
                     break
             if not block:
                 threading.Thread(target=self.send_worker,
-                                 args=(peer, message),
+                                 args=(peer, protocol, args),
                                  daemon=True
                                  ).start()
 
-    def send_worker(self, peer, message):
+    def construct_protocol(self, protocol, args, receiver=None):
+        """ Construct a string according to the protocol
+
+        Keyword arguments:
+        protocol -- the protocol
+        args -- arguments needed for the protocol
+        receiver -- peer receiving this message (optional)
+        """
+        if not isinstance(protocol, str):
+            raise ValueError
+        if not isinstance(args, list):
+            raise ValueError
+        if protocol == 'msg':  # Message
+            protocol = "msg:{port}:{user}:{message}"
+            return protocol.format(port=args[0], user=args[1], message=args[2])
+        if protocol == 'msgs':  # Secure message
+            if receiver and receiver.get_pubk():
+                pubk = receiver.get_pubk()
+                return self.lanchat.e2e.msgs_protocol_send(message, pubk)
+            else:
+                raise ValueError
+        if protocol == 'hb':
+            return "hb:{port}:{user}".format(port=args[0], user=args[1])
+        if protocol == 're':
+            protocol = 're:{port}:{nip}:{nport}:{nuser}'
+            return protocol.format(port=args[0], nip=args[1],
+                                   nport=args[2], nuser=args[3])
+        if protocol == 'kreq':
+            protocol = 'kreq:{port}'
+            return protocol.format(port=args[0])
+
+    def send_worker(self, peer, protocol, args):
         """ Sends a message to one particular peer
 
         Keyword arguments:
         peer -- Peer object
-        message -- The message
+        protocol -- the protocol
+        args -- a list of arguments for the protocol
         """
-        if not isinstance(message, str):
+        if not isinstance(protocol, str):
+            raise ValueError
+        if not isinstance(args, list):
             raise ValueError
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -51,10 +86,14 @@ class TCPClient():
                     raise ValueError("Error: Port has to be an integer")
                 address = (peer.get_ip(), peer.get_port())
                 sock.connect(address)
+                message = self.construct_protocol(protocol, *args, receiver=peer)
                 sock.sendall(bytes(message, 'utf-8'))
         except ConnectionRefusedError:
             # Let heartbeat deal with this
             pass
         except TimeoutError:
             # Let heartbeat deal with this
+            pass
+        except ValueError:
+            # Receiver doesn't have a public key
             pass

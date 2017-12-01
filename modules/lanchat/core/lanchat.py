@@ -1,5 +1,5 @@
 import threading
-from modules.lanchat.core import sysbot
+from modules.lanchat.core import sysbot, encryption
 from modules.lanchat.network import client, heartbeat, server
 from modules.lanchat.ui import render
 
@@ -25,6 +25,11 @@ class LANChat():
         self.render = render.Render(self)
         # Initailize sysbot
         self.sysbot = sysbot.SysBot(self)
+        # Initialize encryption
+        self.encryption = False
+        if encryption.CAN_ENCRYPT:
+            self.e2e = encryption.Encryption(self.host)
+            self.encryption = True
 
     def get_host(self):
         """ Get host information """
@@ -53,18 +58,25 @@ class LANChat():
         self.heartbeat.stahp()
         self.render.stahp()
 
-    def send_message(self, message):
+    def send_message(self, message, protocol='msg'):
         """ Send a message from the host account.
 
         Keyword arguments:
         message - message from the host
+        protocol - message
         """
-        if not isinstance(message, str): raise ValueError
-        # Message format: "username:port:message"
-        message = "msg:{}:{}:{}".format(self.host.get_username(),
-                                        self.host.get_port(),
-                                        message)
-        self.client.send(message, blocklist=self.peers.blocklist)
+        if not isinstance(message, str):
+            raise ValueError
+        args = []
+        if protocol == 'msg':
+            args = [self.host.get_username(), self.host.get_port(),
+                    message]
+        elif protocol == 'msgs':
+            args = [message]
+
+        self.client.send('msg', *args, blocklist=self.peers.blocklist)
+
+
 
     def display_message(self, username, message):
         """ Display a message on screen.

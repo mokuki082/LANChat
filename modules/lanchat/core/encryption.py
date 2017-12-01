@@ -42,6 +42,14 @@ class Encryption():
         pubkey_path = os.path.join('.', 'security', 'pubkey.der')
         privkey_path = os.path.join('.', 'security', 'privkey.der')
 
+        # Create directories if doesn't exist
+        if not os.path.exists(os.path.dirname(pubkey_path)):
+            try:
+                os.makedirs(os.path.dirname(pubkey_path))
+            except OSError as exc: # Guard against race condition
+                if exc.errno != errno.EEXIST:
+                    raise
+
         try:
             with open(pubkey_path, 'r') as f:
                 key = base642bin(f.read().encode())
@@ -58,6 +66,10 @@ class Encryption():
             with open(privkey_path, 'w') as f:
                 key = self.privkey.exportKey('DER')
                 f.write(str(bin2base64(key), 'ascii'))
+
+    def get_pkey(self):
+        """ Get the string representation of the public key """
+        return str(base642bin(self.pubkey), 'ascii')
 
     def encrypt(self, message, pubk):
         """ Encrypt a message using a given public key

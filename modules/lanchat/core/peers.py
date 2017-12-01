@@ -6,7 +6,7 @@ from datetime import datetime
 
 class PeerInfo():
     """ A class containing all peers' information """
-    def __init__(self, username, ip, port, last_seen=None):
+    def __init__(self, username, ip, port, last_seen=None, pubk=None):
         """ Constructor
 
         Keyword arguments:
@@ -19,6 +19,7 @@ class PeerInfo():
         self.set_ip(ip)
         self.set_port(port)
         self.last_seen = last_seen if last_seen else datetime.now()
+        self.pubk = None
 
     def get_username(self):
         """ Get username """
@@ -35,6 +36,10 @@ class PeerInfo():
     def get_address(self):
         """ Get (ip, port) """
         return (self.ip, self.port)
+
+    def get_pubk(self):
+        """ Get public key if exists """
+        return self.pubk
 
     def set_username(self, username):
         """ Set username, accept None """
@@ -73,6 +78,14 @@ class PeerInfo():
         if port not in range(1024, 65535):
             raise ValueError('Invalid port range')
         self.port = port
+
+    def set_pubk(self, pubk):
+        """ Set public key
+
+        Keyword arguments:
+        pubk -- public in base64 ascii string representation
+        """
+        self.pubk = pubk
 
     def compare(self, ip, port):
         return self.ip == ip and self.port == port
