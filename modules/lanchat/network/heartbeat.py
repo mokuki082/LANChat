@@ -31,7 +31,7 @@ class HeartBeat():
         while not self.stop:
             # Broadcast a heartbeat to everyone
             args = [self.host.get_port(), self.host.get_username()]
-            self.client.send('hb', *args)
+            self.client.broadcast('hb', *args)
             # Remove all peers that hasn't been seen for more than 4 seconds
             peers_del = []
             for peer in self.peers.get_peers():

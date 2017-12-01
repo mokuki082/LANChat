@@ -71,4 +71,8 @@ class SysBot():
         if command == '/help':
             self.say(self.help_text)
             return
+        if command.startswith('/enc '):
+            message = ''.join(command.split()[1:])
+            
+
         self.say('Sowy, command not found. Try /help')

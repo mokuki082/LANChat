@@ -67,9 +67,10 @@ class Encryption():
                 key = self.privkey.exportKey('DER')
                 f.write(str(bin2base64(key), 'ascii'))
 
-    def get_pkey(self):
+    def get_pubk(self):
         """ Get the string representation of the public key """
-        return str(base642bin(self.pubkey), 'ascii')
+        key = self.pubkey.exportKey('DER')
+        return str(bin2base64(key), 'ascii')
 
     def encrypt(self, message, pubk):
         """ Encrypt a message using a given public key

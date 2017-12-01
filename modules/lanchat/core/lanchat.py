@@ -26,10 +26,9 @@ class LANChat():
         # Initailize sysbot
         self.sysbot = sysbot.SysBot(self)
         # Initialize encryption
-        self.encryption = False
-        if encryption.CAN_ENCRYPT:
+        self.has_encryption = encryption.CAN_ENCRYPT
+        if self.has_encryption:
             self.e2e = encryption.Encryption(self.host)
-            self.encryption = True
 
     def get_host(self):
         """ Get host information """
@@ -74,7 +73,7 @@ class LANChat():
         elif protocol == 'msgs':
             args = [message]
 
-        self.client.send('msg', *args, blocklist=self.peers.blocklist)
+        self.client.broadcast('msg', *args, blocklist=self.peers.blocklist)
 
 
 
