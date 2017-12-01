@@ -16,14 +16,10 @@ def load_config(hostf=None, peersf=None):
     # Initialize Host and Peers objects
     user = None
     given_peers = None
-    # Initialize default host config in case if needed
-    default_host_config = {"ip": "0.0.0.0", "port": 8080,
-                           "username": None, "color": None}
     if hostf:
         user = host.Host(hostf)
     else:
         user = host.Host(None)
-        user.set_host(default_host_config)
     if peersf:
         given_peers = peers.Peers(peersf, user)
     else:

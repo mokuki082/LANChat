@@ -17,6 +17,8 @@ Note:
 
 
 ### Config files
+__Default Config files are automatically generated when using it the first time (with no arguments given)__
+
 #### Host Config
 The __host config file__ is a _json_ file with following format:
 ```

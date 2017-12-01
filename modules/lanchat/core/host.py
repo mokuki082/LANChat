@@ -13,6 +13,9 @@ class Host():
         """
         if config_fname:
             self.load_config(config_fname)
+        else:
+            self.set_host({"username": None, "ip": "0.0.0.0", "port":8080,
+                           "color": None})
 
     def get_host(self):
         """ Get a dictionary containing host information. """

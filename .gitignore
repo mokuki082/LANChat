@@ -12,5 +12,6 @@ test*
 *.ai
 assets*
 
-# Config files
+# Config/Security files
 config*
+security*
