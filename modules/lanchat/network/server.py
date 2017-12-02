@@ -118,11 +118,24 @@ class TCPServer():
                         # update last_seen
                         found_peer.last_seen = datetime.now()
                         # update username
-                        try:
-                            found_peer.set_username(username)
-                        except ValueError:
-                            self.thread_clr(thread_id)
-                            continue
+                        old = found_peer.get_username()
+                        if old and not (old == username):
+                            try:
+                                old = found_peer.get_username()
+                                new = username
+                                found_peer.set_username(username)
+                                if self.lanchat.has_encryption:
+                                    host = self.lanchat.get_host()
+                                    args = [host.get_port()]
+                                    peer = p.search(ip=ip, port=port)
+                                    self.lanchat.client.unicast(found_peer,
+                                                                'kreq',
+                                                                *args)
+                                sys_msg = "{} is now {}".format(old, new)
+                                self.lanchat.sys_say(sys_msg)
+                            except ValueError:
+                                self.thread_clr(thread_id)
+                                continue
                     else:  # New user'
                         # Add the user into peers
                         try:
@@ -167,7 +180,7 @@ class TCPServer():
                                                  blocklist=[(ip, from_port)])
                         if self.lanchat.has_encryption:
                             args = [host.get_port()]
-                            peer = p.search(ip=ip, port=from_port)
+                            peer = p.search(ip=new_ip, port=new_port)
                             self.lanchat.client.unicast(peer, 'kreq', *args)
 
                 elif command == 'kpub': # Receives a public key from a peer

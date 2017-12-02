@@ -74,7 +74,7 @@ class Encryption():
 
     def encrypt(self, message, pubk):
         """ Encrypt a message using a given public key
-        Returns ciphertext in base64
+        Returns ciphertext in base64 ascii string
 
         Keyword arguments:
         message -- a message in string
@@ -82,9 +82,11 @@ class Encryption():
         """
         # Decode public key
         pubk = base642bin(bytes(pubk, 'ascii'))
+        pubk = RSA.importKey(pubk)
         # Encrypt message
         cipher = PKCS1_OAEP.new(pubk)
-        return bin2base64(cipher.encrypt(bytes(message, 'utf-8')))
+        ciphertext = cipher.encrypt(bytes(message, 'utf-8'))
+        return str(bin2base64(ciphertext), 'ascii')
 
     def decrypt(self, ciphertext):
         """ Decrypt a ciphertext using self's private key
@@ -106,6 +108,8 @@ class Encryption():
         Keyword arguments:
         message -- the message in utf-8 string
         """
+        if not isinstance(message, str):
+            raise ValueError("message not a string")
         h = SHA512.new(bytes(message, 'utf-8'))
         signer = PKCS1_PSS.new(self.privkey)
         signature = signer.sign(h)
@@ -119,12 +123,18 @@ class Encryption():
         signature -- the signature in base64 ascii string
         pubkey -- sender's public key in base64 ascii string
         """
+        if not isinstance(message, str):
+            raise ValueError('message not a string')
+        if not isinstance(signature, str):
+            raise ValueError('signature not a string')
+        if not isinstance(pubkey, str):
+            raise ValueError('pubkey not a string')
         # Decode parameters
         signature = base642bin(bytes(signature, 'ascii'))
         pubkey = base642bin(bytes(pubkey, 'ascii'))
         # Verify
         key = RSA.importKey(pubkey)
-        h = SHA512(bytes(message, 'utf-8'))
+        h = SHA512.new(bytes(message, 'utf-8'))
         verifier = PKCS1_PSS.new(key)
         if verifier.verify(h, signature):
             return True
@@ -139,9 +149,9 @@ class Encryption():
         message -- the message
         pubk_str -- receiver's public key
         """
-        protocol = 'msgs:{user}:{port}:{ciphertext}:{signature}'
-        user = host.get_username()
-        port = host.get_port()
+        protocol = 'msgs:{port}:{user}:{ciphertext}:{signature}'
+        user = self.host.get_username()
+        port = self.host.get_port()
         ciphertext = self.encrypt(message, pubk_str)
         signature = self.sign(ciphertext)
         return protocol.format(user=user, port=port,
@@ -156,6 +166,12 @@ class Encryption():
         ciphertext -- the ciphertext
         certificate
         """
+        if not isinstance(ciphertext, str):
+            raise ValueError('ciphertext not a string')
+        if not isinstance(certificate, str):
+            raise ValueError('certificate not a string')
+        if not isinstance(pubk, str):
+            raise ValueError('pubkey not a string')
         if not self.verify(ciphertext, certificate, pubk):
             return None
         return self.decrypt(ciphertext)

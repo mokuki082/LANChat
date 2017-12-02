@@ -44,6 +44,15 @@ class LANChat():
 
     def run(self):
         """ Run the application. """
+        # Set up
+        # Merge networks
+        for receiver in self.peers.get_peers():
+            for peer in self.peers.get_peers():
+                if peer is receiver:
+                    continue
+                args = [self.host.get_port(), peer.get_ip(),
+                        peer.get_port(), 'unknown']
+                self.client.unicast(receiver, 're', *args)
         # Start server
         threading.Thread(target=self.server.serve, daemon=True).start()
         # Start heartbeat
@@ -72,21 +81,20 @@ class LANChat():
                     message]
         elif protocol == 'msgs':
             args = [message]
+        self.client.broadcast(protocol, *args, blocklist=self.peers.blocklist)
 
-        self.client.broadcast('msg', *args, blocklist=self.peers.blocklist)
-
-
-
-    def display_message(self, username, message):
+    def display_message(self, username, message, mode=None):
         """ Display a message on screen.
 
         Keyword arguments:
         username -- whom should the message appear to be sent by
         message -- the message
         """
-        if not isinstance(username, str): raise ValueError
-        if not isinstance(message, str): raise ValueError
-        self.render.add_message(username, message)
+        if not isinstance(username, str):
+            raise ValueError
+        if not isinstance(message, str):
+            raise ValueError
+        self.render.add_message(username, message, mode=mode)
 
     def do_command(self, command):
         """ Process a command from the host

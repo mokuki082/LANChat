@@ -72,7 +72,9 @@ class SysBot():
             self.say(self.help_text)
             return
         if command.startswith('/enc '):
-            message = ''.join(command.split()[1:])
-            
-
+            message = ' '.join(command.split()[1:])
+            self.lanchat.display_message(self.lanchat.host.get_username(),
+                                         message)
+            self.lanchat.send_message(message, protocol='msgs')
+            return
         self.say('Sowy, command not found. Try /help')
