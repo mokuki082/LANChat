@@ -12,7 +12,7 @@ try:
     from Crypto.Signature import PKCS1_PSS
     from Crypto.Hash import SHA512
     CAN_ENCRYPT = True
-except ModuleNotFoundError:
+except ImportError:
     pass
 
 def bin2base64(bin_str):
