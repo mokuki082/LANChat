@@ -1,5 +1,6 @@
 import os
 import binascii
+import math
 
 # Locals
 CAN_ENCRYPT = False
@@ -149,14 +150,18 @@ class Encryption():
         message -- the message
         pubk_str -- receiver's public key
         """
+        max_len = 214  # k - 2 * hLen - 2
         protocol = 'msgs:{port}:{user}:{ciphertext}:{signature}'
         user = self.host.get_username()
         port = self.host.get_port()
-        ciphertext = self.encrypt(message, pubk_str)
+        ciphertext = []
+        for i in range(math.ceil(len(message) / max_len)):
+            m = self.encrypt(message[i * max_len: (i + 1) * max_len], pubk_str)
+            ciphertext.append(m)
+        ciphertext = '|'.join(ciphertext)
         signature = self.sign(ciphertext)
         return protocol.format(user=user, port=port,
                                ciphertext=ciphertext, signature=signature)
-
 
     def msgs_protocol_receive(self, ciphertext, certificate, pubk):
         """ Get the original message from the ciphertext, returns None
@@ -174,4 +179,7 @@ class Encryption():
             raise ValueError('pubkey not a string')
         if not self.verify(ciphertext, certificate, pubk):
             return None
-        return self.decrypt(ciphertext)
+        message = []
+        for c in ciphertext.split('|'):
+            message.append(self.decrypt(c))
+        return ''.join(message)

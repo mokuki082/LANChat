@@ -67,7 +67,13 @@ class TCPServer():
             if self.threads[thread_id][1]:  # There is a job for thready!
                 client, addr = self.threads[thread_id][1:]
                 ip = addr[0]
-                data = str(client.recv(2048), 'utf-8')
+                data = str(client.recv(1024), 'utf-8')
+                packet = data
+                count = 0
+                while packet and count < 3:
+                    packet = str(client.recv(1024), 'utf-8')
+                    data += packet
+                    count += 1
                 command, *args = data.split(':')
                 # Process Command
                 if command == 'msg':  # A new message from someone
@@ -133,8 +139,9 @@ class TCPServer():
                                     self.lanchat.client.unicast(found_peer,
                                                                 'kreq',
                                                                 *args)
-                                # Display message if user was merged from another network
-                                if not old:
+                                # Display message if user was merged from
+                                # another network
+                                if old:
                                     sys_msg = "{} is now {}".format(old, new)
                                     self.lanchat.sys_say(sys_msg)
                             except ValueError:
@@ -215,6 +222,7 @@ class TCPServer():
                     pkey = self.lanchat.e2e.get_pubk()
                     args = [host.get_port(), host.get_username(), pkey]
                     self.lanchat.client.broadcast('kpub', *args)
+
                 self.thread_clr(thread_id)
             time.sleep(0.05)
 
