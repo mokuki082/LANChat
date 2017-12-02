@@ -1,10 +1,14 @@
 ![LANChat](https://raw.githubusercontent.com/mokuki082/LANChat/master/img/logo.png)
 
+New:
+> Allow end to end encryption __if Pycrypto is installed__
+
 ## Getting Started
 ### Prerequisites
 
-- Python3
-- Linux or MacOS
+- __Python3__
+- __Linux or MacOS__
+- Pycrypto `pip3 install pycrypto` for e2e encryption. (optional)
 
 ### Running the program
 ```
@@ -13,11 +17,11 @@
 Note:
 - `[args]` represents optional arguments.
 - `0.0.0.0:8080` is used as the default address
-- Messages in the current version are _unencrypted_. Please use with caution.
 
 
 ### Config files
-__Default Config files are automatically generated when using it the first time (with no arguments given)__
+__Default Config files are automatically generated when using it the first time
+(with no arguments given)__
 
 #### Host Config
 The __host config file__ is a _json_ file with following format:
@@ -43,8 +47,6 @@ Users can use the `/save_config` command
 in the program to save the current network configuration.
 
 # License
-This project is licensed under Apache2.0. See [LICENSE](https://github.com/mokuki082/LANChat/blob/master/LICENSE) for more information.
-
-# TODO
-- Color code usernames according to the `color` attribute in the config file.
-- End-to-end encryption
+This project is licensed under Apache2.0. See
+[LICENSE](https://github.com/mokuki082/LANChat/blob/master/LICENSE)
+for more information.

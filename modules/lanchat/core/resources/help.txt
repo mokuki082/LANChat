@@ -5,4 +5,4 @@ List of commands:
 	/block <usernames...> - block certain peers
 	/unblock <usernames...> - unblock certain peers
 	/help - display help screen
-
+	/encrypt <enable or disable> - enable/disable encryption
