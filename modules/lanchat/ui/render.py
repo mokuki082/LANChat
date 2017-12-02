@@ -153,9 +153,10 @@ class Render():
         self.h, self.w = stdscr.getmaxyx()
         stdscr.nodelay(True)
         # Initialize colors
-        curses.start_color()
-        curses.use_default_colors()
-        curses.init_pair(1, curses.COLOR_CYAN, -1)
+        if curses.has_colors():
+            curses.start_color()
+            curses.use_default_colors()
+            curses.init_pair(1, curses.COLOR_CYAN, -1)
 
         # Start rendering chatroom
         while not self.stop:
@@ -197,12 +198,15 @@ class Render():
         message -- the message
         mode -- mode of the message, could be 'REVERSE'. (optional)
         """
-        if mode == 'REVERSE':
-            mode = curses.A_REVERSE
-        elif mode == 'ENCRYPTED':
-            mode = curses.color_pair(1)
-        elif mode:  # If mode is not None
-            raise ValueError('Invalid mode')
+        if curses.has_colors():
+            if mode == 'REVERSE':
+                mode = curses.A_REVERSE
+            elif mode == 'ENCRYPTED':
+                mode = curses.color_pair(1)
+            elif mode:  # If mode is not None
+                raise ValueError('Invalid mode')
+        else:
+            mode = None
         self.message_log.append(
             {'user': username, 'msg': message, 'mode': mode}
         )
