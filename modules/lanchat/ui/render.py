@@ -177,8 +177,6 @@ class Render():
                 if self.input.startswith('/'):  # It's a command
                     self.lanchat.do_command(self.input)
                 else:  # It's a message
-                    self.add_message(self.lanchat.get_host().get_username(),
-                                     self.input)
                     self.lanchat.send_message(self.input)
                 self.input = ''
         elif c == 127 or c == 263:  # Backspace
@@ -201,6 +199,10 @@ class Render():
         """
         if mode == 'REVERSE':
             mode = curses.A_REVERSE
+        elif mode == 'STANDOUT':
+            mode = curses.A_STANDOUT
+        elif mode:  # If mode is not None
+            raise ValueError('Invalid mode')
         self.message_log.append(
             {'user': username, 'msg': message, 'mode': mode}
         )

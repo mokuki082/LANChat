@@ -102,7 +102,8 @@ class TCPServer():
                                                             signature,
                                                             peer.get_pubk())
                         if message:
-                            self.lanchat.display_message(peer.get_username(),
+                            self.lanchat.display_message('*' +
+                                                         peer.get_username(),
                                                          message)
                 elif command == 'hb':  # heartbeat
                     try:

@@ -27,8 +27,10 @@ class LANChat():
         self.sysbot = sysbot.SysBot(self)
         # Initialize encryption
         self.has_encryption = encryption.CAN_ENCRYPT
+        self.encrypt_mode = 'disabled'
         if self.has_encryption:
             self.e2e = encryption.Encryption(self.host)
+            self.encrypt_mode = 'enabled'
 
     def get_host(self):
         """ Get host information """
@@ -66,7 +68,7 @@ class LANChat():
         self.heartbeat.stahp()
         self.render.stahp()
 
-    def send_message(self, message, protocol='msg'):
+    def send_message(self, message):
         """ Send a message from the host account.
 
         Keyword arguments:
@@ -76,10 +78,14 @@ class LANChat():
         if not isinstance(message, str):
             raise ValueError
         args = []
-        if protocol == 'msg':
+        protocol = 'msg'
+        if self.encrypt_mode == 'disabled':
+            self.render.add_message(self.host.get_username(), message)
             args = [self.host.get_username(), self.host.get_port(),
                     message]
-        elif protocol == 'msgs':
+        elif self.encrypt_mode == 'enabled':
+            protocol = 'msgs'
+            self.render.add_message('*' + self.host.get_username(), message)
             args = [message]
         self.client.broadcast(protocol, *args, blocklist=self.peers.blocklist)
 

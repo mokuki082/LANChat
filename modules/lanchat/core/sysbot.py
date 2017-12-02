@@ -71,10 +71,21 @@ class SysBot():
         if command == '/help':
             self.say(self.help_text)
             return
-        if command.startswith('/enc '):
-            message = ' '.join(command.split()[1:])
-            self.lanchat.display_message(self.lanchat.host.get_username(),
-                                         message)
-            self.lanchat.send_message(message, protocol='msgs')
+        if command.startswith('/encrypt'):
+            args = command.split()
+            if not len(args) == 2:
+                self.lanchat.sys_say('Usage: /encrypt [disable or enable]')
+                return
+            if len(args) == 2 and args[1] == 'enable':
+                if self.lanchat.has_encryption:
+                    self.lanchat.encrypt_mode = 'enabled'
+                    self.lanchat.sys_say('End-to-end encryption enabled.')
+                else:
+                    self.lanchat.sys_say('Pycrypto not installed. Cannot encrypt messages.')
+            elif len(args) == 2 and args[1] == 'disable':
+                self.lanchat.encrypt_mode = 'disabled'
+                self.lanchat.sys_say('End-to-end encryption disabled.')
+            else:
+                self.lanchat.sys_say('Usage: /encrypt [disable or enable]')
             return
         self.say('Sowy, command not found. Try /help')
