@@ -85,7 +85,7 @@ class LANChat():
                     message]
         elif self.encrypt_mode == 'enabled':
             protocol = 'msgs'
-            self.render.add_message('*' + self.host.get_username(), message,
+            self.render.add_message(self.host.get_username(), message,
                                     mode='ENCRYPTED')
             args = [message]
         self.client.broadcast(protocol, *args, blocklist=self.peers.blocklist)
