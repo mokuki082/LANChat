@@ -8,7 +8,8 @@ New:
 
 - __Python3__
 - __Linux or MacOS__
-- Pycrypto `pip3 install pycrypto` for e2e encryption. (optional)
+- Pycrypto for e2e encryption. (optional)
+  - To install: `pip3 install pycrypto`
 
 ### Running the program
 ```
