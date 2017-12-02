@@ -19,7 +19,8 @@ class Render():
         self.message_log = []  # message_log [{'user':'moku','msg':'hello'}...]
         self.msg_count = 0  # Counts the number of messages rendered on screen
         self.curr_y = 0  # Counts the number of lines filled on screen
-        self.max_input = 900 # Maximum input size
+        self.max_input = 900  # Maximum input size
+        self.colors = {}
 
     def run(self):
         """ Start rendering """
@@ -154,8 +155,7 @@ class Render():
         # Initialize colors
         curses.start_color()
         curses.use_default_colors()
-        for i in range(0, curses.COLORS):
-            curses.init_pair(i + 1, i, -1)
+        curses.init_pair(1, curses.COLOR_CYAN, -1)
 
         # Start rendering chatroom
         while not self.stop:
@@ -199,8 +199,8 @@ class Render():
         """
         if mode == 'REVERSE':
             mode = curses.A_REVERSE
-        elif mode == 'STANDOUT':
-            mode = curses.A_STANDOUT
+        elif mode == 'ENCRYPTED':
+            mode = curses.color_pair(1)
         elif mode:  # If mode is not None
             raise ValueError('Invalid mode')
         self.message_log.append(

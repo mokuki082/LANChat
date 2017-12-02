@@ -104,7 +104,8 @@ class TCPServer():
                         if message:
                             self.lanchat.display_message('*' +
                                                          peer.get_username(),
-                                                         message)
+                                                         message,
+                                                         mode='ENCRYPTED')
                 elif command == 'hb':  # heartbeat
                     try:
                         port, username = args
