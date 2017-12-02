@@ -121,7 +121,7 @@ class TCPServer():
                         found_peer.last_seen = datetime.now()
                         # update username
                         old = found_peer.get_username()
-                        if old and not (old == username):
+                        if not (old == username):
                             try:
                                 old = found_peer.get_username()
                                 new = username
@@ -133,8 +133,10 @@ class TCPServer():
                                     self.lanchat.client.unicast(found_peer,
                                                                 'kreq',
                                                                 *args)
-                                sys_msg = "{} is now {}".format(old, new)
-                                self.lanchat.sys_say(sys_msg)
+                                # Display message if user was merged from another network
+                                if not old:
+                                    sys_msg = "{} is now {}".format(old, new)
+                                    self.lanchat.sys_say(sys_msg)
                             except ValueError:
                                 self.thread_clr(thread_id)
                                 continue
