@@ -23,6 +23,7 @@ class TCPServer():
     def stahp(self):
         """ Stop the server """
         self.stop = True
+        self.socket.close()
 
     def serve(self):
         """ Start serving """
