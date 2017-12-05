@@ -155,7 +155,6 @@ class TCPServer():
                         except ValueError:
                             self.thread_clr(thread_id)
                             continue
-                        # Relay: "re:port:new_ip:new_port:new_username"
                         host = self.lanchat.get_host()
                         args = [host.get_port(), ip, port, username]
                         self.lanchat.client.broadcast('re', *args,
@@ -209,6 +208,7 @@ class TCPServer():
                         found_peer.set_pubk(pubk)
                     else: # Create a peer with this pubk
                         p.add(peers.PeerInfo(username, ip, port, pubk=pubk))
+
                 elif command == 'kreq':
                     if not self.lanchat.has_encryption:
                         self.thread_clr(thread_id)
@@ -222,7 +222,8 @@ class TCPServer():
                     host = self.lanchat.get_host()
                     pkey = self.lanchat.e2e.get_pubk()
                     args = [host.get_port(), host.get_username(), pkey]
-                    self.lanchat.client.broadcast('kpub', *args)
+                    p = peers.PeerInfo(None, ip, port)
+                    self.lanchat.client.unicast(p, 'kpub', *args)
 
                 self.thread_clr(thread_id)
             time.sleep(0.05)

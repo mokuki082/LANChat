@@ -1,12 +1,12 @@
 import threading
-from modules.lanchat.core import sysbot, encryption
+from modules.lanchat.core import sysbot, encryption, peers
 from modules.lanchat.network import client, heartbeat, server
 from modules.lanchat.ui import render
 
 
 class LANChat():
     """ A class for the central control of all components """
-    def __init__(self, host, peers):
+    def __init__(self, host, init_peers):
         """ Constructor.
 
         Keyword arguments:
@@ -15,7 +15,8 @@ class LANChat():
         """
         # Initialize user and peers
         self.host = host  # Dictionary containing user info
-        self.peers = peers  # Peers object
+        self.initial_peers = init_peers  # Initial peers object
+        self.peers = peers.Peers(None, host) # peers
         # Initialize server and client
         self.server = server.TCPServer(self)
         self.client = client.TCPClient(self)
@@ -48,13 +49,10 @@ class LANChat():
         """ Run the application. """
         # Set up
         # Merge networks
-        for receiver in self.peers.get_peers():
-            for peer in self.peers.get_peers():
-                if peer is receiver:
-                    continue
-                args = [self.host.get_port(), peer.get_ip(),
-                        peer.get_port(), 'unknown']
-                self.client.unicast(receiver, 're', *args)
+        # send a heartbeat to everyone
+        for peer in self.initial_peers.get_peers():
+            args = [self.host.get_port(), self.host.get_username()]
+            self.client.unicast(peer, 'hb', *args)
         # Start server
         threading.Thread(target=self.server.serve, daemon=True).start()
         # Start heartbeat

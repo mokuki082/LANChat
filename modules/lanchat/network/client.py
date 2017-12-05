@@ -93,7 +93,6 @@ class TCPClient():
                 sock.connect(address)
                 message = self.construct_protocol(protocol, *args,
                                                   receiver=peer)
-                # self.lanchat.sys_say(str(peer.port) + ' ' + message)
                 sock.sendall(bytes(message, 'utf-8'))
         except ConnectionRefusedError:
             # Let heartbeat deal with this
