@@ -101,6 +101,11 @@ class TCPServer():
                     except ValueError:
                         self.thread_clr(thread_id)
                         continue
+                    blocklist = self.lanchat.get_blocklist()
+                    # Check if sender is in blocklist
+                    if (ip, port) in blocklist:
+                        self.thread_clr(thread_id)
+                        continue
                     e2e = self.lanchat.e2e
                     p = self.lanchat.get_peers()
                     peer = p.search(ip=ip, port=port)
