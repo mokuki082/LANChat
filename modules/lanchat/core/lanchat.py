@@ -79,8 +79,7 @@ class LANChat():
         protocol = 'msg'
         if self.encrypt_mode == 'disabled':
             self.render.add_message(self.host.get_username(), message)
-            args = [self.host.get_username(), self.host.get_port(),
-                    message]
+            args = [self.host.get_port(), self.host.get_username(), message]
         elif self.encrypt_mode == 'enabled':
             protocol = 'msgs'
             self.render.add_message('*' + self.host.get_username(), message,

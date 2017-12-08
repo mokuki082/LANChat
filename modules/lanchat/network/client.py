@@ -90,9 +90,9 @@ class TCPClient():
                 if not isinstance(peer.get_port(), int):
                     raise ValueError("Error: Port has to be an integer")
                 address = (peer.get_ip(), peer.get_port())
-                sock.connect(address)
                 message = self.construct_protocol(protocol, *args,
                                                   receiver=peer)
+                sock.connect(address)
                 sock.sendall(bytes(message, 'utf-8'))
         except ConnectionRefusedError:
             # Let heartbeat deal with this

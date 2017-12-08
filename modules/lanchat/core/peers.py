@@ -21,6 +21,9 @@ class PeerInfo():
         self.last_seen = last_seen if last_seen else datetime.now()
         self.pubk = None
 
+    def __str__(self):
+        return 'PeerInfo({}, {}, {})'.format(self.ip, self.port, self.username)
+
     def get_username(self):
         """ Get username """
         return self.username

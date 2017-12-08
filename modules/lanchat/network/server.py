@@ -79,7 +79,7 @@ class TCPServer():
                 # Process Command
                 if command == 'msg':  # A new message from someone
                     try:
-                        username, port, *message = args
+                        port, username, *message = args
                         port, message = int(port), ':'.join(message)
                     except ValueError:
                         self.thread_clr(thread_id)
