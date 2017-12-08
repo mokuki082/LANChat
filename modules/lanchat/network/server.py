@@ -156,11 +156,13 @@ class TCPServer():
                     else:  # New user'
                         # Add the user into peers
                         try:
-                            p.add(peers.PeerInfo(username, ip, port))
+                            new_peer = peers.PeerInfo(username, ip, port)
+                            p.add(new_peer)
                         except ValueError:
                             self.thread_clr(thread_id)
                             continue
                         host = self.lanchat.get_host()
+                        # Relay the new user to everyone in the network
                         args = [host.get_port(), ip, port, username]
                         self.lanchat.client.broadcast('re', *args,
                                                  blocklist=[(ip, port)])
@@ -174,6 +176,8 @@ class TCPServer():
                     try:
                         from_port, new_ip, new_port, username = args
                         from_port, new_port = int(from_port), int(new_port)
+                        if new_ip == '127.0.0.1' or new_ip == '0.0.0.0':
+                            new_ip = ip
                     except ValueError:
                         self.thread_clr(thread_id)
                         continue
