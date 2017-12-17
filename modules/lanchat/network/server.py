@@ -89,10 +89,11 @@ class TCPServer():
                     if (ip, port) not in blocklist:
                         # Check if sender is in peers
                         if (self.lanchat.get_peers().search(username=username)
-                            and message):
+                                and message):
                             self.lanchat.display_message(username, message)
                 elif command == 'msgs':  # A new encrypted message from someone
-                    if not self.lanchat.has_encryption:  # Encryption not supported
+                    if not self.lanchat.has_encryption:
+                        # Encryption not supported
                         self.thread_clr(thread_id)
                         continue
                     try:
@@ -165,7 +166,7 @@ class TCPServer():
                         # Relay the new user to everyone in the network
                         args = [host.get_port(), ip, port, username]
                         self.lanchat.client.broadcast('re', *args,
-                                                 blocklist=[(ip, port)])
+                                                      blocklist=[(ip, port)])
                         if self.lanchat.has_encryption:
                             args = [self.lanchat.host.get_port()]
                             peer = p.search(ip=ip, port=port)
@@ -185,25 +186,19 @@ class TCPServer():
                     p = self.lanchat.get_peers()
                     found_peer = p.search(ip=new_ip, port=new_port)
                     if not found_peer:
-                        # Add the new peer into peers
-                        try:
-                            p.add(peers.PeerInfo(username, new_ip, new_port))
-                            sys_msg = "{} joined the chat".format(username)
-                            self.lanchat.sys_say(sys_msg)
-                        except ValueError:
-                            self.thread_clr(thread_id)
-                            continue
-                        # Relay again: "re:port:new_ip:new_port:new_username"
                         host = self.lanchat.get_host()
+                        # Send a heartbeat to the new peer
+                        args = [host.get_port(),
+                                host.get_username()]
+                        new_peer = peers.PeerInfo(None, new_ip, new_port)
+                        self.lanchat.client.unicast(new_peer, 'hb', *args)
+                        # Relay again
                         args = [host.get_port(), new_ip, new_port, username]
                         self.lanchat.client.broadcast('re', *args,
-                                                 blocklist=[(ip, from_port)])
-                        if self.lanchat.has_encryption:
-                            args = [host.get_port()]
-                            peer = p.search(ip=new_ip, port=new_port)
-                            self.lanchat.client.unicast(peer, 'kreq', *args)
+                                                      blocklist=[(ip,
+                                                                  from_port)])
 
-                elif command == 'kpub': # Receives a public key from a peer
+                elif command == 'kpub':  # Receives a public key from a peer
                     try:
                         port, username, pubk = args
                         port = int(port)
@@ -215,7 +210,7 @@ class TCPServer():
                     found_peer = p.search(ip=ip, port=port)
                     if found_peer:
                         found_peer.set_pubk(pubk)
-                    else: # Create a peer with this pubk
+                    else:  # Create a peer with this pubk
                         p.add(peers.PeerInfo(username, ip, port, pubk=pubk))
 
                 elif command == 'kreq':

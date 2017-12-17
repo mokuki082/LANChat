@@ -14,7 +14,8 @@ class SysBot():
         self.lanchat.sys_say(msg)
 
     def do_command(self, command):
-        if not isinstance(command, str): raise ValueError
+        if not isinstance(command, str):
+            raise ValueError
         if command == '/quit' or command == '/exit':
             self.lanchat.stahp()
             return
@@ -81,7 +82,8 @@ class SysBot():
                     self.lanchat.encrypt_mode = 'enabled'
                     self.lanchat.sys_say('End-to-end encryption enabled.')
                 else:
-                    self.lanchat.sys_say('Pycrypto not installed. Cannot encrypt messages.')
+                    msg = 'Pycrypto not installed. Cannot encrypt messages.'
+                    self.lanchat.sys_say(msg)
             elif len(args) == 2 and args[1] == 'disable':
                 self.lanchat.encrypt_mode = 'disabled'
                 self.lanchat.sys_say('End-to-end encryption disabled.')
