@@ -142,6 +142,16 @@ class SysBot():
         else:
             self.lanchat.sys_say('Usage: /encrypt [disable or enable]')
 
+    def whois(self, username):
+        matched = self.lanchat.peers.search_all(username=username)
+        if matched:
+            for peer in matched:
+                sys_msg = 'User {uname}: IP: {ip}, port: {port}'
+                self.say(sys_msg.format(uname=peer.username, ip=peer.ip,
+                                        port=peer.port))
+        else:
+            self.say('No peer named {} was found.'.format(uname=username))
+
     def do_command(self, command):
         """ Turn commands into action
 
@@ -176,5 +186,11 @@ class SysBot():
             else:
                 arg = args[1].lower()
                 self.encrypt(arg)
+        elif command.startswith('/whois'):
+            args = command.split()[1:]
+            if args:
+                self.whois(args[0])
+            else:
+                self.sys_say('Usage: /whois <username>')
         else:
             self.say('Sowy, command not found. Try /help')

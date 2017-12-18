@@ -76,7 +76,7 @@ class TCPServer():
                 if ip == user[0]:
                     return True
             else:
-                if ip == user[0] and port  == user[1]:
+                if ip == user[0] and port == user[1]:
                     return True
         return False
 
@@ -85,6 +85,8 @@ class TCPServer():
             raise ValueError('Non-numerical port')
         if not isinstance(username, str):
             raise ValueError('Non-string username')
+        # Strip off spaces after username for some clients
+        username = username.strip()
         # check if this is a new user
         p = self.lanchat.get_peers()
         found_peer = p.search(ip=ip, port=port)
@@ -102,12 +104,10 @@ class TCPServer():
                         host = self.lanchat.get_host()
                         args = [host.get_port()]
                         peer = p.search(ip=ip, port=port)
-                        self.lanchat.client.unicast(found_peer,
-                                                    'kreq',
-                                                    *args)
+                        self.lanchat.client.unicast(found_peer, 'kreq', *args)
                     # Display message if user was merged from
                     # another network
-                    if old:
+                    if old and not self.block_peer(ip, port):
                         sys_msg = "{} is now {}".format(old, new)
                         self.lanchat.sys_say(sys_msg)
                 except ValueError:
@@ -121,7 +121,7 @@ class TCPServer():
                 return
             host = self.lanchat.get_host()
             # Relay the new user to everyone in the network
-            args = [host.get_port(), ip, port, username]
+            args = [host.get_port(), ip, port]
             self.lanchat.client.broadcast('re', *args,
                                           blocklist=[(ip, port)])
             if self.lanchat.has_encryption:
@@ -151,7 +151,7 @@ class TCPServer():
             raise ValueError('Non-numerical port')
         host = self.lanchat.get_host()
         pkey = self.lanchat.e2e.get_pubk()
-        args = [host.get_port(), host.get_username(), pkey]
+        args = [host.get_port(), pkey]
         p = peers.PeerInfo(None, ip, port)
         self.lanchat.client.unicast(p, 'kpub', *args)
 

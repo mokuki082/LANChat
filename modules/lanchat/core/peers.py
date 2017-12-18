@@ -211,6 +211,41 @@ class Peers():
         for peer in peers_to_del:
             self.peers.remove(peer)
 
+    def search_all(self, ip=None, port=None, username=None):
+        """ Search the all peers matching all conditions given
+
+        Keyword arguments:
+        ip -- ip of the peer
+        port -- port of the peer
+        username -- username of the peer
+        """
+        if ip and not isinstance(ip, str):
+            raise ValueError('Invalid ip type')
+        if port and not isinstance(port, int):
+            raise ValueError('Invalid port type')
+        if username and not isinstance(username, str):
+            raise ValueError('Invalid username type')
+
+        match_lim = 0
+        if ip:
+            match_lim += 1
+        if port:
+            match_lim += 1
+        if username:
+            match_lim += 1
+        matched_peers = []
+        for peer in self.peers:
+            match = 0
+            if ip and peer.get_ip() == ip:
+                match += 1
+            if port and peer.get_port() == port:
+                match += 1
+            if username and peer.get_username() == username:
+                match += 1
+            if match == match_lim:
+                matched_peers.append(peer)
+        return matched_peers
+
     def search(self, ip=None, port=None, username=None):
         """ Search the first peer matching all conditions given
 

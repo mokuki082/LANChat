@@ -81,7 +81,7 @@ class TCPClient():
             return protocol.format(port=args[0])
         if protocol == 'kpub':
             protocol = 'kpub:{port}:{pubkey}'
-            return protocol.format(port=args[0], pubkey=args[2])
+            return protocol.format(port=args[0], pubkey=args[1])
         raise ValueError('Invalid Protocol')
 
     def send_worker(self, peer, protocol, *args):
