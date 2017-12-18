@@ -30,10 +30,15 @@ class TCPClient():
             raise ValueError
         for peer in self.peers.get_peers():
             block = False
-            for ip, port in blocklist:
-                if peer.compare(ip, port):
-                    block = True
-                    break
+            for user in blocklist:
+                if len(user) == 1:
+                    if peer.get_ip() == user[0]:
+                        block = True
+                        break
+                elif len(user) == 2:
+                    if peer.compare(user[0], user[1]):
+                        block = True
+                        break
             if not block:
                 threading.Thread(target=self.send_worker,
                                  args=(peer, protocol, *args),
@@ -51,29 +56,33 @@ class TCPClient():
         if not isinstance(protocol, str):
             raise ValueError
         if protocol == 'msg':  # Message
-            protocol = "msg:{port}:{user}:{message}"
-            return protocol.format(port=args[0], user=args[1], message=args[2])
+            protocol = "msg:{port}:{message}"
+            return protocol.format(port=args[0], message=args[2])
         if protocol == 'msgs':  # Secure message
             if (receiver and receiver.get_pubk() and
                     self.lanchat.has_encryption):
                 pubk = receiver.get_pubk()
                 message = args[0]
-                return self.lanchat.e2e.msgs_protocol_send(message, pubk)
+                e2e = self.lanchat.e2e
+                port = self.lanchat.get_host().get_port()
+                ciphertext, signature = e2e.msgs_protocol_send(message, pubk)
+                protocol = 'msgs:{port}:{ciphertext}:{signature}'
+                return protocol.format(port=port, ciphertext=ciphertext,
+                                       signature=signature)
             else:
-                raise ValueError
+                raise ValueError('secure message unsupported')
         if protocol == 'hb':
             return "hb:{port}:{user}".format(port=args[0], user=args[1])
         if protocol == 're':
-            protocol = 're:{port}:{nip}:{nport}:{nuser}'
-            return protocol.format(port=args[0], nip=args[1],
-                                   nport=args[2], nuser=args[3])
+            protocol = 're:{port}:{nip}:{nport}'
+            return protocol.format(port=args[0], nip=args[1], nport=args[2])
         if protocol == 'kreq':
             protocol = 'kreq:{port}'
             return protocol.format(port=args[0])
         if protocol == 'kpub':
-            protocol = 'kpub:{port}:{username}:{pubkey}'
-            return protocol.format(port=args[0], username=args[1],
-                                   pubkey=args[2])
+            protocol = 'kpub:{port}:{pubkey}'
+            return protocol.format(port=args[0], pubkey=args[2])
+        raise ValueError('Invalid Protocol')
 
     def send_worker(self, peer, protocol, *args):
         """ Sends a message to one particular peer

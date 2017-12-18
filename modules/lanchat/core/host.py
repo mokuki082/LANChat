@@ -1,7 +1,31 @@
 import json
 import socket
 import os
+import errno
 
+def check_ip(ip):
+    """ Check that the host IP is valid
+
+    Keyword arguments:
+    ip -- a string
+    """
+    try:
+        socket.inet_aton(ip)
+        return True
+    except socket.error:
+        return False
+
+def check_port(port):
+    """ Check that the host port is valid
+
+    Keyword arguments:
+    port -- an integer
+    """
+    if not isinstance(port, int):
+        return False
+    if port not in range(1024, 65535):
+        return False
+    return True
 
 class Host():
     """ A class containing all host information. """
@@ -14,7 +38,7 @@ class Host():
         if config_fname:
             self.load_config(config_fname)
         else:
-            self.set_host({"username": None, "ip": "0.0.0.0", "port":8080,
+            self.set_host({"username": None, "ip": "0.0.0.0", "port": 8080,
                            "color": None})
 
     def get_host(self):
@@ -50,7 +74,7 @@ class Host():
         ip -- a string
         """
         # Check validity
-        if not self.check_ip(ip):
+        if not check_ip(ip):
             raise ValueError
         self.host['ip'] = ip
 
@@ -65,7 +89,7 @@ class Host():
         port -- an integer within the range 1024-65535
         """
         # Check validity
-        if not self.check_port(port):
+        if not check_port(port):
             raise ValueError
         self.host['port'] = port
 
@@ -107,30 +131,6 @@ class Host():
             config = json.load(f)
             self.set_host(config)
 
-    def check_ip(self, ip):
-        """ Check that the host IP is valid
-
-        Keyword arguments:
-        ip -- a string
-        """
-        try:
-            socket.inet_aton(ip)
-            return True
-        except socket.error:
-            return False
-
-    def check_port(self, port):
-        """ Check that the host port is valid
-
-        Keyword arguments:
-        port -- an integer
-        """
-        if not isinstance(port, int):
-            return False
-        if port not in range(1024, 65535):
-            return False
-        return True
-
     def save_config(self, config_fname):
         """ Save the current status into a file
 
@@ -143,7 +143,7 @@ class Host():
         if not os.path.exists(os.path.dirname(config_fname)):
             try:
                 os.makedirs(os.path.dirname(config_fname))
-            except OSError as exc: # Guard against race condition
+            except OSError as exc:  # Guard against race condition
                 if exc.errno != errno.EEXIST:
                     raise
         with open(config_fname, 'w') as f:

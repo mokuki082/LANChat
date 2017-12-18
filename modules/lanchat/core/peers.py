@@ -2,6 +2,7 @@ import csv
 import socket
 import os
 from datetime import datetime
+import errno
 
 
 class PeerInfo():
@@ -159,7 +160,7 @@ class Peers():
         if not os.path.exists(os.path.dirname(fname)):
             try:
                 os.makedirs(os.path.dirname(fname))
-            except OSError as exc: # Guard against race condition
+            except OSError as exc:  # Guard against race condition
                 if exc.errno != errno.EEXIST:
                     raise
         with open(fname, 'w') as config_f:

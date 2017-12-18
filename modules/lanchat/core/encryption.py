@@ -151,8 +151,7 @@ class Encryption():
         pubk_str -- receiver's public key
         """
         max_len = 214  # k - 2 * hLen - 2
-        protocol = 'msgs:{port}:{user}:{ciphertext}:{signature}'
-        user = self.host.get_username()
+        protocol = 'msgs:{port}:{ciphertext}:{signature}'
         port = self.host.get_port()
         ciphertext = []
         for i in range(math.ceil(len(message) / max_len)):
@@ -160,8 +159,7 @@ class Encryption():
             ciphertext.append(m)
         ciphertext = '|'.join(ciphertext)
         signature = self.sign(ciphertext)
-        return protocol.format(user=user, port=port,
-                               ciphertext=ciphertext, signature=signature)
+        return (ciphertext, signature)
 
     def msgs_protocol_receive(self, ciphertext, certificate, pubk):
         """ Get the original message from the ciphertext, returns None
