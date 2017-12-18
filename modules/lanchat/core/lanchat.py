@@ -54,9 +54,9 @@ class LANChat():
             args = [self.host.get_port(), self.host.get_username()]
             self.client.unicast(peer, 'hb', *args)
         # Start server
-        threading.Thread(target=self.server.serve, daemon=True).start()
+        threading.Thread(target=self.server.serve).start()
         # Start heartbeat
-        threading.Thread(target=self.heartbeat.run, daemon=True).start()
+        threading.Thread(target=self.heartbeat.run).start()
         # Start rendering
         self.render.run()
 

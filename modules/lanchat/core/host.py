@@ -40,6 +40,13 @@ class Host():
         else:
             self.set_host({"username": None, "ip": "0.0.0.0", "port": 8080,
                            "color": None})
+        # List of IP addresses associated with host
+        self.ip_addr = ['0.0.0.0', '127.0.0.1']
+        self.ip_addr += socket.gethostbyname_ex(socket.gethostname())[2]
+
+    def get_ip_addrs(self):
+        """ Get a list of IP addresses associated with this computer """
+        return self.ip_addr
 
     def get_host(self):
         """ Get a dictionary containing host information. """

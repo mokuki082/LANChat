@@ -80,6 +80,31 @@ class TCPServer():
                     return True
         return False
 
+    def host_search(self, ip, port):
+        """ If the IP is a host IP, search in the peer list with multiple IP
+        addresses as specified in host.get_ip_addrs().
+        Returns the IP that is used in the peers list/host list, otherwise
+        None.
+
+        Keyword Argumnets:
+        ip -- ip address
+        port -- port number
+        """
+        host = self.lanchat.get_host()
+        peers = self.lanchat.get_peers()
+        ip_addrs = host.get_ip_addrs()
+        if ip in ip_addrs:
+            # Is this ip:port in peers list?
+            for ip in ip_addrs:
+                p = peers.search(ip=ip, port=port)
+                if p:
+                    return ip
+            # Is this ip:port used for this host?
+            for ip in ip_addrs:
+                if ip == host.get_ip() and port == host.get_port():
+                    return ip
+        return None
+
     def heartbeat(self, ip, port, username):
         if not isinstance(port, int):
             raise ValueError('Non-numerical port')
@@ -89,6 +114,8 @@ class TCPServer():
         username = username.strip()
         # check if this is a new user
         p = self.lanchat.get_peers()
+        host_search_result = self.host_search(ip, port)
+        ip = ip if not host_search_result else host_search_result
         found_peer = p.search(ip=ip, port=port)
         if found_peer:  # Old user
             # update last_seen
@@ -110,9 +137,9 @@ class TCPServer():
                     if old and not self.block_peer(ip, port):
                         sys_msg = "{} is now {}".format(old, new)
                         self.lanchat.sys_say(sys_msg)
-                except ValueError:
+                except ValueError:  # Invalid username
                     return
-        else:  # New user'
+        else:  # New user
             # Add the user into peers
             try:
                 new_peer = peers.PeerInfo(username, ip, port)
@@ -136,8 +163,12 @@ class TCPServer():
             new_ip = from_ip
         # check if this is a new user
         p = self.lanchat.get_peers()
+        # Check if the user is host or already exists in peerlist
+        host_search_result = self.host_search(new_ip, new_port)
+        new_ip = new_ip if not host_search_result else host_search_result
         found_peer = p.search(ip=new_ip, port=new_port)
         if not found_peer:
+            # Peer hadn't been seen before
             host = self.lanchat.get_host()
             # Send a heartbeat to the new peer
             args = [host.get_port(), host.get_username()]
@@ -163,7 +194,6 @@ class TCPServer():
             found_peer.set_pubk(pubk)
 
     def message(self, ip, port, message):
-        message = message.strip()  # Get rid of newlines
         if self.block_peer(ip, port=port):
             return
         # Check if sender is in peers
@@ -198,13 +228,8 @@ class TCPServer():
             if self.threads[thread_id][1]:  # There is a job for thready!
                 client, addr = self.threads[thread_id][1:]
                 ip = addr[0]
-                data = str(client.recv(1024), 'utf-8')
-                packet = data
-                count = 0
-                while packet and count < 3:
-                    packet = str(client.recv(1024), 'utf-8')
-                    data += packet
-                    count += 1
+                ip = ip if not ip.startswith('127.') else '127.0.0.1'
+                data = str(client.recv(3072), 'utf-8')
                 self.threads[thread_id][1].close()
                 command, *args = data.split(':')
                 # Process Command
