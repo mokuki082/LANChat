@@ -150,7 +150,7 @@ class SysBot():
                 self.say(sys_msg.format(uname=peer.username, ip=peer.ip,
                                         port=peer.port))
         else:
-            self.say('No peer named {} was found.'.format(uname=username))
+            self.say('No peer named {uname} was found.'.format(uname=username))
 
     def do_command(self, command):
         """ Turn commands into action

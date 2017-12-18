@@ -13,7 +13,8 @@ class HeartBeat():
         Keyword arguments:
         lanchat -- a LANChat object
         """
-        if not isinstance(lanchat, lanchat_api.LANChat): raise ValueError
+        if not isinstance(lanchat, lanchat_api.LANChat):
+            raise ValueError
         self.stop = False
         self.lanchat = lanchat
         self.host = lanchat.get_host()
@@ -38,8 +39,9 @@ class HeartBeat():
                 if int((datetime.now() - peer.last_seen).total_seconds()) > 4:
                     peers_del.append(peer)
             for peer in peers_del:
+                self.peers.remove(address=(peer.get_ip(), peer.get_port()))
                 if peer.username:
                     sys_msg = '{} disconnected'.format(peer.username)
                     self.lanchat.sys_say(sys_msg)
-                self.peers.remove(address=(peer.get_ip(), peer.get_port()))
+
             time.sleep(1)

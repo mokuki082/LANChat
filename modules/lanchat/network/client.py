@@ -115,3 +115,6 @@ class TCPClient():
         except BrokenPipeError:
             # Unknown
             pass
+        except OSError:
+            # Slow network or network is down
+            pass

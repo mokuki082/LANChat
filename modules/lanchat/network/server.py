@@ -205,6 +205,7 @@ class TCPServer():
                     packet = str(client.recv(1024), 'utf-8')
                     data += packet
                     count += 1
+                self.threads[thread_id][1].close()
                 command, *args = data.split(':')
                 # Process Command
                 if command == 'msg':  # A new message from someone
@@ -259,12 +260,10 @@ class TCPServer():
                         self.key_request(ip, port)
                     except ValueError:
                         pass
-
                 self.thread_clr(thread_id)
             time.sleep(0.05)
 
     def thread_clr(self, thread_id):
-        self.threads[thread_id][1].close()
         # Clear client
         self.threads[thread_id][1] = None
         # Clear address
