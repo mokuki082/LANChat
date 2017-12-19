@@ -5,6 +5,18 @@ import math
 import os
 
 
+def filter_printable(message):
+    filtered = ''
+    for i in message:
+        c = ord(i)
+        if c in range(31) and c not in [9,10]:
+            continue
+        if c in range(127, 160):
+            continue
+        filtered += i
+    return filtered
+
+
 class Render():
     """ Linux/MacOS Terminal renderer """
     def __init__(self, lanchat):
@@ -198,6 +210,8 @@ class Render():
         message -- the message
         mode -- mode of the message, could be 'REVERSE'. (optional)
         """
+        username = filter_printable(username)
+        message = filter_printable(message)
         if curses.has_colors():
             if mode == 'REVERSE':
                 mode = curses.A_REVERSE
