@@ -196,9 +196,9 @@ class SysBot():
                 arg = args[1].lower()
                 self.encrypt(arg)
         elif command.startswith('/whois'):
-            args = command.split()[1:]
-            if args:
-                self.whois(args[0])
+            username = ' '.join(command.split()[1:])
+            if username:
+                self.whois(username)
             else:
                 self.say('Usage: /whois <username>')
         elif command.startswith('/chname'):

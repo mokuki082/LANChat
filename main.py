@@ -4,6 +4,7 @@ from modules.lanchat.core import peers, lanchat, host
 import sys
 import os
 
+
 def load_config(hostf=None, peersf=None):
     """ Loads configuration based on given filenames.
     If no filename given, default configuration is used.
@@ -26,13 +27,14 @@ def load_config(hostf=None, peersf=None):
         given_peers = peers.Peers(None, user)
     return (user, given_peers)
 
+
 def add_peers(given_peers):
     """ Add a list of peers from stdin
 
     Keyword arguments:
     given_peers -- Peers object
     """
-    print("Put down a list of 'ip port' pairs and enter a blank line when done.")
+    print("Put down a list of '<ip>:<port>' pairs and enter a blank line when done.")
     address = input("")
     while address:
         if len(address.split()) == 2:
@@ -45,6 +47,7 @@ def add_peers(given_peers):
         else:
             print("Usage: 'ip port'")
         address = input("")
+
 
 if __name__ == '__main__':
     # Default file paths
@@ -84,8 +87,8 @@ if __name__ == '__main__':
         # Add peers until a blank line is entered
         add_peers(given_peers)
         # Save this configuration?
-        save_config = input("Would you like to save this configuration? (y/n) ")
-        if save_config == 'y':
+        save = input("Would you like to save this configuration? (y/n) ")
+        if save == 'y':
             given_peers.save_config(peersf)
             print('Config saved.')
     # If user hasn't specified a username
