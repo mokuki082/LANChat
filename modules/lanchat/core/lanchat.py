@@ -54,16 +54,23 @@ class LANChat():
             args = [self.host.get_port(), self.host.get_username()]
             self.client.unicast(peer, 'hb', *args)
         # Start server
-        threading.Thread(target=self.server.serve).start()
+        self.server_t = threading.Thread(target=self.server.serve,
+                                         daemon=False)
+        self.server_t.start()
         # Start heartbeat
-        threading.Thread(target=self.heartbeat.run).start()
+        self.heartbeat_t = threading.Thread(target=self.heartbeat.run,
+                                            daemon=False)
+        self.heartbeat_t.start()
         # Start rendering
         self.render.run()
+        print('\n-- Goodbye.')
 
     def stahp(self):
         """ Stop the application. """
         self.server.stahp()
+        self.server_t.join()
         self.heartbeat.stahp()
+        self.heartbeat_t.join()
         self.render.stahp()
 
     def send_message(self, message):

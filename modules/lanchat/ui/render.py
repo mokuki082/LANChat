@@ -24,10 +24,10 @@ class Render():
 
     def run(self):
         """ Start rendering """
-        # Clear screen avoid glitchy display to do with scrolls
-        # Warning: Not sustainable, will use pads in future
-        for _ in range(3):
-            os.system('clear')
+        # # Clear screen avoid glitchy display to do with scrolls
+        # # Warning: Not sustainable, will use pads in future
+        # for _ in range(3):
+        #     os.system('clear')
         wrapper(self.main)
 
     def stahp(self):

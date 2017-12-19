@@ -43,5 +43,4 @@ class HeartBeat():
                 if peer.username:
                     sys_msg = '{} disconnected'.format(peer.username)
                     self.lanchat.sys_say(sys_msg)
-
             time.sleep(1)

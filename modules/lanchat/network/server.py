@@ -23,6 +23,8 @@ class TCPServer():
     def stahp(self):
         """ Stop the server """
         self.stop = True
+        for thread in self.threads:
+            thread[0].join()
         self.socket.close()
 
     def serve(self):
@@ -43,7 +45,10 @@ class TCPServer():
         self.socket.listen()
         # Give a task to a thread in the thread pool
         while not self.stop:
-            client, addr = self.socket.accept()
+            try:
+                client, addr = self.socket.accept()
+            except ConnectionAbortedError:
+                break
             found_thread = False
             # Select a thread to give the task to
             while not found_thread:
@@ -55,10 +60,8 @@ class TCPServer():
                         break
                 time.sleep(0.01)
             time.sleep(0.05)
-        for thread in self.threads:
-            thread.join()
 
-    def block_peer(self, ip, port=None):
+    def block_peer(self, ip, port):
         """ Returns a boolean of whether to block the given ip/port or not
 
         Keyword Arguments:
@@ -106,6 +109,12 @@ class TCPServer():
         return None
 
     def heartbeat(self, ip, port, username):
+        """ Heartbeat protocol handler
+
+        ip -- ip of the heartbeat sender
+        port -- port of the heartbeat sender
+        username -- username of the heartbeat sender
+        """
         if not isinstance(port, int):
             raise ValueError('Non-numerical port')
         if not isinstance(username, str):
@@ -155,8 +164,11 @@ class TCPServer():
                 args = [self.lanchat.host.get_port()]
                 peer = p.search(ip=ip, port=port)
                 self.lanchat.client.unicast(peer, 'kreq', *args)
-            sys_msg = "{} joined the chat".format(username)
-            self.lanchat.sys_say(sys_msg)
+            if not self.block_peer(ip, port):
+                # If this ip is not in the blocklist, notify user that someone
+                # has joined
+                sys_msg = "{} joined the chat".format(username)
+                self.lanchat.sys_say(sys_msg)
 
     def relay(self, from_ip, from_port, new_ip, new_port):
         if new_ip == '127.0.0.1' or new_ip == '0.0.0.0':
@@ -194,7 +206,7 @@ class TCPServer():
             found_peer.set_pubk(pubk)
 
     def message(self, ip, port, message):
-        if self.block_peer(ip, port=port):
+        if self.block_peer(ip, port):
             return
         # Check if sender is in peers
         sender = self.lanchat.get_peers().search(ip=ip, port=port)
@@ -202,9 +214,9 @@ class TCPServer():
             self.lanchat.display_message(sender.username, message)
 
     def message_secure(self, ip, port, ciphertext, signature):
-        if not self.lanchat.has_encryption:
+        if self.block_peer(ip, port):
             return
-        if self.block_peer(ip, port=port):
+        if not self.lanchat.has_encryption:
             return
         e2e = self.lanchat.e2e
         p = self.lanchat.get_peers()
@@ -278,7 +290,7 @@ class TCPServer():
                         self.thread_clr(thread_id)
                         continue
 
-                elif command == 'kreq':
+                elif command == 'kreq':  # A request for a public key
                     try:
                         port = args[0]
                         port = int(port)

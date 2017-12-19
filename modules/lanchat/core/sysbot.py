@@ -161,6 +161,7 @@ class SysBot():
         if not isinstance(command, str):
             raise ValueError
         if command == '/quit' or command == '/exit':
+            self.say('Shutting down...')
             self.lanchat.stahp()
         elif command.startswith('/save_config'):
             args = command.split()
