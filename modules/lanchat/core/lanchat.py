@@ -55,11 +55,11 @@ class LANChat():
             self.client.unicast(peer, 'hb', *args)
         # Start server
         self.server_t = threading.Thread(target=self.server.serve,
-                                         daemon=False)
+                                         daemon=True)
         self.server_t.start()
         # Start heartbeat
         self.heartbeat_t = threading.Thread(target=self.heartbeat.run,
-                                            daemon=False)
+                                            daemon=True)
         self.heartbeat_t.start()
         # Start rendering
         self.render.run()
