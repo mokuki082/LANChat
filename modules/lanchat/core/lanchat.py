@@ -1,22 +1,26 @@
 import threading
-from modules.lanchat.core import sysbot, encryption, peers
+from modules.lanchat.core import sysbot, encryption, peers, host
 from modules.lanchat.network import client, heartbeat, server
 from modules.lanchat.ui import render
 
 
 class LANChat():
     """ A class for the central control of all components """
-    def __init__(self, host, init_peers):
+    def __init__(self, this_host, init_peers):
         """ Constructor.
 
         Keyword arguments:
         host -- a Host object containing host information
         peers -- a Peers object containing peer information
         """
+        if not isinstance(this_host, host.Host):
+            raise ValueError('LANChat(): host is not of type Host')
+        if not isinstance(init_peers, peers.Peers):
+            raise ValueError('LANChat(): init_peers is not of type Peers')
         # Initialize user and peers
-        self.host = host  # Dictionary containing user info
+        self.host = this_host  # Dictionary containing user info
         self.initial_peers = init_peers  # Initial peers object
-        self.peers = peers.Peers(None, host) # peers
+        self.peers = peers.Peers(None, this_host)  # peers
         # Initialize server and client
         self.server = server.TCPServer(self)
         self.client = client.TCPClient(self)
@@ -78,10 +82,10 @@ class LANChat():
 
         Keyword arguments:
         message - message from the host
-        protocol - message
+        protocol - messagez
         """
         if not isinstance(message, str):
-            raise ValueError
+            raise ValueError('LANChat.send_message(): message is not a string')
         args = []
         protocol = 'msg'
         if self.encrypt_mode == 'disabled':

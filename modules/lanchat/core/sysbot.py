@@ -132,15 +132,15 @@ class SysBot():
         if arg == 'enable':
             if self.lanchat.has_encryption:
                 self.lanchat.encrypt_mode = 'enabled'
-                self.lanchat.sys_say('End-to-end encryption enabled.')
+                self.say('End-to-end encryption enabled.')
             else:
                 msg = 'Pycrypto not installed. Cannot encrypt messages.'
-                self.lanchat.sys_say(msg)
+                self.say(msg)
         elif arg == 'disable':
             self.lanchat.encrypt_mode = 'disabled'
-            self.lanchat.sys_say('End-to-end encryption disabled.')
+            self.say('End-to-end encryption disabled.')
         else:
-            self.lanchat.sys_say('Usage: /encrypt [disable or enable]')
+            self.say('Usage: /encrypt [disable or enable]')
 
     def whois(self, username):
         matched = self.lanchat.peers.search_all(username=username)
@@ -151,6 +151,14 @@ class SysBot():
                                         port=peer.port))
         else:
             self.say('No peer named {uname} was found.'.format(uname=username))
+
+    def change_name(self, username):
+        host = self.lanchat.get_host()
+        try:
+            host.set_username(username)
+            self.say('Username successfully changed to {}'.format(username))
+        except ValueError:
+            self.say('Error: Username must be within 1-16 characters')
 
     def do_command(self, command):
         """ Turn commands into action
@@ -183,7 +191,7 @@ class SysBot():
             args = command.split()
             # Condition checking
             if not len(args) == 2:
-                self.lanchat.sys_say('Usage: /encrypt [disable or enable]')
+                self.say('Usage: /encrypt [disable or enable]')
             else:
                 arg = args[1].lower()
                 self.encrypt(arg)
@@ -192,6 +200,12 @@ class SysBot():
             if args:
                 self.whois(args[0])
             else:
-                self.sys_say('Usage: /whois <username>')
+                self.say('Usage: /whois <username>')
+        elif command.startswith('/chname'):
+            uname = ' '.join(command.split()[1:])
+            if uname:
+                self.change_name(uname)
+            else:
+                self.say('Usage: /chname <new username>')
         else:
-            self.say('Sowy, command not found. Try /help')
+            self.say('Command not found. Try /help')
