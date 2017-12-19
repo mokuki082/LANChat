@@ -65,27 +65,6 @@ class TCPServer():
                 time.sleep(0.01)
             time.sleep(0.05)
 
-    def block_peer(self, ip, port):
-        """ Returns a boolean of whether to block the given ip/port or not
-
-        Keyword Arguments:
-        ip -- ip of the peer
-        port -- port of the peer (optional)
-        """
-        if not isinstance(ip, str):
-            raise ValueError('Non-string IP')
-        if not isinstance(port, int):
-            raise ValueError('Non-numerical port')
-
-        blocklist = self.lanchat.get_blocklist()
-        for user in blocklist:
-            if len(user) == 1:  # Block all peers with this ip
-                if ip == user[0]:
-                    return True
-            else:
-                if ip == user[0] and port == user[1]:
-                    return True
-        return False
 
     def host_search(self, ip, port):
         """ If the IP is a host IP, search in the peer list with multiple IP
@@ -147,7 +126,7 @@ class TCPServer():
                         self.lanchat.client.unicast(found_peer, 'kreq', *args)
                     # Display message if user was merged from
                     # another network
-                    if old and not self.block_peer(ip, port):
+                    if old and not self.lanchat.peers.block_peer(ip, port):
                         sys_msg = "{} is now {}".format(old, new)
                         self.lanchat.sys_say(sys_msg)
                 except ValueError:  # Invalid username
@@ -168,7 +147,7 @@ class TCPServer():
                 args = [self.lanchat.host.get_port()]
                 peer = p.search(ip=ip, port=port)
                 self.lanchat.client.unicast(peer, 'kreq', *args)
-            if not self.block_peer(ip, port):
+            if not self.lanchat.peers.block_peer(ip, port):
                 # If this ip is not in the blocklist, notify user that someone
                 # has joined
                 sys_msg = "{} joined the chat".format(username)
@@ -210,7 +189,7 @@ class TCPServer():
             found_peer.set_pubk(pubk)
 
     def message(self, ip, port, message):
-        if self.block_peer(ip, port):
+        if self.lanchat.peers.block_peer(ip, port):
             return
         # Check if sender is in peers
         sender = self.lanchat.get_peers().search(ip=ip, port=port)
@@ -218,7 +197,7 @@ class TCPServer():
             self.lanchat.display_message(sender.username, message)
 
     def message_secure(self, ip, port, ciphertext, signature):
-        if self.block_peer(ip, port):
+        if self.lanchat.peers.block_peer(ip, port):
             return
         if not self.lanchat.has_encryption:
             return
@@ -245,8 +224,13 @@ class TCPServer():
                 client, addr = self.threads[thread_id][1:]
                 ip = addr[0]
                 ip = ip if not ip.startswith('127.') else '127.0.0.1'
-                data = str(client.recv(3072), 'utf-8')
+                data = client.recv(3072)
                 self.threads[thread_id][1].close()
+                try:
+                    data = str(data, 'utf-8')
+                except UnicodeDecodeError:
+                    self.thread_clr(thread_id)
+                    continue
                 command, *args = data.split(':')
                 # Process Command
                 if command == 'msg':  # A new message from someone
@@ -257,7 +241,6 @@ class TCPServer():
                     except ValueError:
                         self.thread_clr(thread_id)
                         continue
-
                 elif command == 'msgs':  # A new encrypted message from someone
                     try:
                         port, ciphertext, signature = args

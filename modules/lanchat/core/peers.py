@@ -287,3 +287,24 @@ class Peers():
             if peer.get_username():
                 users.append(peer.get_username())
         return users
+
+    def block_peer(self, ip, port):
+        """ Returns a boolean of whether to block the given ip/port or not
+
+        Keyword Arguments:
+        ip -- ip of the peer
+        port -- port of the peer (optional)
+        """
+        if not isinstance(ip, str):
+            raise ValueError('Non-string IP')
+        if not isinstance(port, int):
+            raise ValueError('Non-numerical port')
+
+        for user in self.blocklist:
+            if len(user) == 1:  # Block all peers with this ip
+                if ip == user[0]:
+                    return True
+            else:
+                if ip == user[0] and port == user[1]:
+                    return True
+        return False

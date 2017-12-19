@@ -40,7 +40,8 @@ class HeartBeat():
                     peers_del.append(peer)
             for peer in peers_del:
                 self.peers.remove(address=(peer.get_ip(), peer.get_port()))
-                if peer.username:
+                block_peer = self.peers.block_peer(peer.ip, peer.port)
+                if peer.username and not block_peer:
                     sys_msg = '{} disconnected'.format(peer.username)
                     self.lanchat.sys_say(sys_msg)
             time.sleep(1)
