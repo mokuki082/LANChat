@@ -18,7 +18,11 @@ class TCPServer():
         self.socket = socket.socket()
         ip = lanchat.get_host().get_ip()
         port = lanchat.get_host().get_port()
-        self.socket.bind((ip, port))
+        try:
+            self.socket.bind((ip, port))
+        except OSError:
+            print('Error: Address already in use')
+            exit(1)
 
     def stahp(self):
         """ Stop the server """
