@@ -224,3 +224,5 @@ class Render():
         self.message_log.append(
             {'user': username, 'msg': message, 'mode': mode}
         )
+        if self.lanchat.beep:
+            curses.beep()

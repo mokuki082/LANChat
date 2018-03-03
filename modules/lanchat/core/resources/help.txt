@@ -8,3 +8,4 @@ List of commands:
 /encrypt <enable or disable> - enable/disable encryption
 /whois <username> - show a peer's information
 /chname <new username> - change username
+/beep <enable or disable> - enables/disable beep when receiving messages

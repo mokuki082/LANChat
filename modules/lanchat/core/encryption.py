@@ -45,11 +45,7 @@ class Encryption():
 
         # Create directories if doesn't exist
         if not os.path.exists(os.path.dirname(pubkey_path)):
-            try:
-                os.makedirs(os.path.dirname(pubkey_path))
-            except OSError as exc: # Guard against race condition
-                if exc.errno != errno.EEXIST:
-                    raise
+            os.makedirs(os.path.dirname(pubkey_path))
 
         try:
             with open(pubkey_path, 'r') as f:

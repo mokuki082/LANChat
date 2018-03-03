@@ -27,6 +27,9 @@ class SysBot():
         else:
             self.say("Peers: {}".format(', '.join(users)))
 
+    def beep(self, to_beep):
+        self.lanchat.beep = to_beep
+
     def block(self, *users):
         # 0 -- success, 1 -- invalid ip/port, 2 -- invalid format
         success = [0 for _ in users]
@@ -207,5 +210,20 @@ class SysBot():
                 self.change_name(uname)
             else:
                 self.say('Usage: /chname <new username>')
+        elif command.startswith('/beep'):
+            args = command.split()
+            # Condition checking
+            if not len(args) == 2:
+                self.say('Usage: /beep [true or false]')
+            else:
+                arg = args[1].lower()
+                if arg == 'enable':
+                    self.say('Beeping Enabled.')
+                    self.beep(True)
+                elif arg == 'disable':
+                    self.say('Beeping Disabled.')
+                    self.beep(False)
+                else:
+                    self.say('Usage: /beep [true or false]')
         else:
             self.say('Command not found. Try /help')

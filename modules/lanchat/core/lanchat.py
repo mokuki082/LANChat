@@ -33,6 +33,8 @@ class LANChat():
         # Initialize encryption
         self.has_encryption = encryption.CAN_ENCRYPT
         self.encrypt_mode = 'disabled'
+        # Beep
+        self.beep = False
         if self.has_encryption:
             self.e2e = encryption.Encryption(self.host)
             self.encrypt_mode = 'enabled'
